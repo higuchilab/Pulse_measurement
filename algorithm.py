@@ -39,7 +39,7 @@ class Measure_block():
     # self.bottom_time = base_time
     # self.interval = interval
     self.expect_time = (self.params["bot_time"] + self.params["top_time"]) * self.params["loop"] + self.params["interval"]
-    self.selected = False
+    self.select()
 
   def measure(self, V_set, measure_times, dev, datas):
     self.stop_flag = False
@@ -120,8 +120,10 @@ class Measure_frame():
     self.blocks = Measure_block.instances
     return new_block
 
-  def del_block(self, content):
-    content.delete()
+  # def del_block(self):
+  #   for instance in Measure_block.instances:
+  #     if instance.selected == True:
+  #       instance.delete()
 
   def make_cycle(self):
     Cycle()

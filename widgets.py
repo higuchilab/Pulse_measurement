@@ -203,22 +203,29 @@ class Measure_box_frame(tk.Frame):
   def __init__(self, master):
     super().__init__(master)
     self.master = master
+    self.config(relief="groove", width=80, height=200)
     self.measure_frame = Measure_frame()
-    self.add_button = tk.Button(master=self, text="Add", command=self.make_block)
-    self.del_button = tk.Button(master=self, text="Del", command=self.del_block)
+    self.init_block = Block_label(master=self)
+    self.add_button = tk.Button(master=self.master, text="Add", command=self.make_block)
+    self.del_button = tk.Button(master=self.master, text="Del", command=self.del_block)
+    self.del_button["state"] == "disable"
     self.cycle_button = tk.Button(master=self, text="Cycle set", command=self.open_cycle)
-    self.add_button.pack()
-    self.del_button.pack()
+    self.add_button.place(x=440, y=250)
+    self.del_button.place(x=480, y=250)
     self.place(x=430, y=0)
 
   def make_block(self):
-    Block_label(master=self)
+    new_block = Block_label(master=self)
     # self.measure_frame.make_block()
     self.del_button["state"] == "able"
+    self.master.update_idletasks()
 
   def del_block(self):
     #block_labelを消す処理を書く
-    self.measure_frame.del_block()
+    for instance in Block_label.instances:
+      if instance.block.selected == True:
+        del instance
+        # self.measure_frame.del_block()
     if len(Measure_block.instances)==1:
       self.del_button["state"] == "disable"
 
@@ -251,6 +258,7 @@ class Block_label(tk.Label):
     self.bind("<ButtonPress-1>", self.open_setting)
 
   def __del__(self):
+    self.block.delete()
     Block_label.reset_pos()
 
   @classmethod
