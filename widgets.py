@@ -137,7 +137,7 @@ class Buttons():
 
   def create(self, config):
       for key, var in config.items():
-          self.button[key] = tk.Button(
+          self.button[key] = ttk.Button(
               master=self.master,
               text = key,
               width = var[0],
