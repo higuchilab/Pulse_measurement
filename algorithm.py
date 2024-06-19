@@ -4,8 +4,8 @@ from operator import attrgetter
 class Measure_block():
   instances = []
 
-  def __init__(self, loop=5, V_top=1.0, V_base=0.0, top_time=10.0, base_time=10.0, interval=10.0):
-    self.set(len(Measure_block.instances), loop, V_top, V_base, top_time, base_time, interval)
+  def __init__(self, loop=5, V_top=1.0, V_base=0.0, top_time=10.0, base_time=10.0, interval=10.0, spinbox_instances=None):
+    self.set(len(Measure_block.instances), loop, V_top, V_base, top_time, base_time, interval, spinbox_instances)
     # Block_label(self)
     Measure_block.instances.append(self)
 
@@ -22,7 +22,7 @@ class Measure_block():
     for instance in cls.instances:
       instance.selected = False
 
-  def set(self, index, loop, V_top, V_base, top_time, base_time, interval):
+  def set(self, index, loop, V_top, V_base, top_time, base_time, interval, spinbox_instances):
     self.index = index
     self.params = {
       "V_top" : V_top,
@@ -39,7 +39,7 @@ class Measure_block():
     # self.bottom_time = base_time
     # self.interval = interval
     self.expect_time = (self.params["bot_time"] + self.params["top_time"]) * self.params["loop"] + self.params["interval"]
-    self.select()
+    self.select(spinbox_instances)
 
   def measure(self, V_set, measure_times, dev, datas):
     self.stop_flag = False
@@ -115,8 +115,8 @@ class Measure_frame():
     for instance in self.cycles:
       self.expect_time = self.expect_time + instance.expect_time
 
-  def make_block(self):
-    new_block = Measure_block()
+  def make_block(self, spinbox_instances):
+    new_block = Measure_block(spinbox_instances)
     self.blocks = Measure_block.instances
     return new_block
 

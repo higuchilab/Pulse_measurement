@@ -250,7 +250,7 @@ class Block_label(tk.Label):
       textvariable=self.text,
       bg="white"
     )
-    self.block = self.master.measure_frame.make_block()
+    self.block = self.master.measure_frame.make_block(Spinbox.instances)
     # self.block = Measure_block()
     # self.pack(side=tk.TOP)
     self.place(x=450, y=20*(len(Block_label.instances)))
