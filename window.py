@@ -47,7 +47,8 @@ class Application(tk.Frame):
       read_widgets=[
         self.text_boxes,
         self.check_buttons,
-        self.combo_boxes],
+        self.combo_boxes
+      ],
       measure_blocks=self.measure_box_frame.measure_frame,
       datas=self.datas,
       statusbar=self.statusbar
@@ -55,7 +56,7 @@ class Application(tk.Frame):
 
 if __name__ == "__main__":
   root = tk.Tk()
-  root.geometry("430x300")
+  root.geometry("530x300")
   root.resizable(False, False)#ウィンドウサイズをフリーズ
   root.lift()#最前面に表示
   app = Application(master=root)

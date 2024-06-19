@@ -209,14 +209,15 @@ class Measure_box_frame(tk.Frame):
     self.cycle_button = tk.Button(master=self, text="Cycle set", command=self.open_cycle)
     self.add_button.pack()
     self.del_button.pack()
-    self.pack()
+    self.place(x=430, y=0)
 
   def make_block(self):
-    Block_label()
-    self.measure_frame.make_block()
+    Block_label(master=self)
+    # self.measure_frame.make_block()
     self.del_button["state"] == "able"
 
   def del_block(self):
+    #block_labelを消す処理を書く
     self.measure_frame.del_block()
     if len(Measure_block.instances)==1:
       self.del_button["state"] == "disable"
@@ -233,20 +234,33 @@ class Measure_box_frame(tk.Frame):
 class Block_label(tk.Label):
   instances = []
 
-  def __init__(self, block, master=None):
+  def __init__(self, master=None):
     super().__init__(master)
     self.master = master
+    Block_label.instances.append(self)
     self.text=tk.StringVar(master=self, value="ブロック")
-    self.config(textvariable=self.text,
-                bg="white")
-    self.block = Measure_block()
-    self.pack(side=tk.TOP)
+    self.config(
+      textvariable=self.text,
+      bg="white"
+    )
+    self.block = self.master.measure_frame.make_block()
+    # self.block = Measure_block()
+    # self.pack(side=tk.TOP)
+    self.place(x=450, y=20*(len(Block_label.instances)))
 
     self.bind("<ButtonPress-1>", self.open_setting)
+
+  def __del__(self):
+    Block_label.reset_pos()
 
   @classmethod
   def reset_bg(cls):
     cls.config(bg="white")
+
+  @classmethod
+  def reset_pos(cls):
+    for i, instance in enumerate(cls.instances):
+      instance.place(450, 20 * i)
 
   def open_setting(self):
     self.block.select(Spinbox.instances)

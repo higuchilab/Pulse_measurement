@@ -111,7 +111,10 @@ def run_func(read_widgets, blocks, datas, statusbar):
         "OPR"#出力
         ]
     for command in start_commands:
-        dev.write(command)
+        try:
+          dev.write(command)
+        except:
+          print(command)
 
     # dev.write("*RST")#初期化
     # dev.write("M1")#トリガーモード HOLD

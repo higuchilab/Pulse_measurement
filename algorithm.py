@@ -9,6 +9,9 @@ class Measure_block():
     # Block_label(self)
     Measure_block.instances.append(self)
 
+  # def __del__(self):
+
+
   @classmethod
   def reset_index(cls):
     for index, instance in enumerate(cls.instances):
@@ -113,8 +116,9 @@ class Measure_frame():
       self.expect_time = self.expect_time + instance.expect_time
 
   def make_block(self):
-    Measure_block()
+    new_block = Measure_block()
     self.blocks = Measure_block.instances
+    return new_block
 
   def del_block(self, content):
     content.delete()
