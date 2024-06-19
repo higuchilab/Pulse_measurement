@@ -1,4 +1,5 @@
 import time
+import tkinter as tk
 from operator import attrgetter
 
 class Measure_block():
@@ -38,8 +39,11 @@ class Measure_block():
     # self.top_time = top_time
     # self.bottom_time = base_time
     # self.interval = interval
-    self.expect_time = (self.params["bot_time"] + self.params["top_time"]) * self.params["loop"] + self.params["interval"]
+    # self.estimate_time = (self.params["bot_time"] + self.params["top_time"]) * self.params["loop"] + self.params["interval"]
     self.select(spinbox_instances)
+
+  def estimate_time(self):
+    return (self.params["bot_time"] + self.params["top_time"]) * self.params["loop"] + self.params["interval"]
 
   def measure(self, V_set, measure_times, dev, datas):
     self.stop_flag = False
@@ -69,6 +73,7 @@ class Measure_block():
   def select(self, spinbox_instances):
     Measure_block.reset_selected()
     for instance, (key, value) in zip(spinbox_instances, self.params.items()):
+      instance.delete(0, tk.END)
       instance.insert(0, value)
     self.selected = True
 

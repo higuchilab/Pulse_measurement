@@ -60,7 +60,8 @@ if __name__ == "__main__":
 
     root = tk.Tk()
     root.title("Pulse ver1.1")
-    root.geometry("430x300")#横×縦
+    root.geometry("530x300")#横×縦
     root.resizable(False, False)#ウィンドウサイズをフリーズ
     root.lift()#最前面に表示
     app = Application(root)
+    app.mainloop()
