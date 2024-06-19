@@ -116,7 +116,7 @@ class Measure_frame():
       self.expect_time = self.expect_time + instance.expect_time
 
   def make_block(self, spinbox_instances):
-    new_block = Measure_block(spinbox_instances)
+    new_block = Measure_block(spinbox_instances=spinbox_instances)
     self.blocks = Measure_block.instances
     return new_block
 
