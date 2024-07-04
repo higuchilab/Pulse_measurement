@@ -94,20 +94,23 @@ class Cycle():
   def sort(cls):
     Cycle.instances.sort(key=attrgetter('cycle_contents[0].index'))
 
+  def read(self):
+    return self.cycle_contents
+
   def set(self, content):
     self.cycle_contents.append(content)
     self.expect_time = self.expect_time + content.expect_time
     self.cycle_contents.sort(key=attrgetter('index'))
 
-  def remove(self, content_index):
-    return self.cycle_contents.pop(content_index)
+  def remove(self, content):
+    self.cycle_contents.remove(content)
 
   def run(self, dev, datas):
     for _ in range(int(self.loop)):
       for block in self.cycle_contents:
         block.run(dev, datas)
 
-class Measure_frame():
+class Measure_list():
   def __init__(self):
     self.blocks = Measure_block.instances
     self.cycles = Cycle.instances
@@ -131,7 +134,9 @@ class Measure_frame():
   #       instance.delete()
 
   def make_cycle(self):
-    Cycle()
+    new_cycle = Cycle()
+    self.cycles = Cycle.instances
+    return new_cycle
 
   def add_block_to_cycle(self, content):
     Cycle.set(content)

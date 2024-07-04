@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 from controller import set_folder_func, exc_run_func, stop_func
-from algorithm import Measure_block, Measure_frame
+from algorithm import Measure_block, Measure_list, Cycle
 
 class Labels():
   def __init__(self, master):
@@ -204,9 +204,77 @@ class Measure_box_frame(tk.Frame):
     super().__init__(master)
     self.master = master
     self.config(relief="groove", width=80, height=200, bd=2)
-    self.measure_frame = Measure_frame()
-    self.init_block = Block_label(master=self)
+    self.measure_list = Measure_list()
+    self.init_block = Block_label_main(master=self)
     self.init_block.open_setting()
+    # self.add_button = tk.Button(master=self.master, text="Add", command=self.make_block)
+    # self.del_button = tk.Button(master=self.master, text="Del", command=self.del_block)
+    # self.del_button["state"] = tk.DISABLED
+    # self.cycle_button = tk.Button(master=self, text="Cycle set", command=self.open_cycle)
+    # self.add_button.place(x=440, y=250)
+    # self.del_button.place(x=480, y=250)
+    # self.cycle_button.place(x=400, y=250)
+    Measure_box_cnf_buttons(master=self.master, frame=self)
+    self.place(x=430, y=0)
+
+  # def make_block(self):
+  #   new_block = Block_label(master=self)
+  #   self.del_button["state"] = tk.NORMAL
+  #   self.master.update_idletasks()
+
+  # def del_block(self):
+  #   for instance in Block_label.instances:
+  #     if instance.block.selected == True:
+  #       Measure_block.instances.remove(instance.block)
+  #       del instance.block
+  #       Block_label.instances.remove(instance)
+  #       instance.destroy()
+  #       # self.measure_frame.del_block()
+  #   if len(Measure_block.instances)==1:
+  #     self.del_button["state"] = tk.DISABLED
+  #   Block_label.reset_pos()
+
+  # def open_cycle(self):
+  #   self.window = tk.Toplevel(self.master)
+  #   self.window.grab_set()
+  #   self.window.geometry("300x300")
+  #   # num_lp = tk.Spinbox(self.window, )
+
+  #   # self.spinbox_config = {
+  #   #   #{tag :[min, max, step, init]}
+  #   #   "loop":[1, 10000, 1, 5]
+  #   #   }
+  #   # for i, (key, value) in enumerate(self.spinbox_config.items()):
+
+  #   #ウィジット配置
+
+  #   num_lp = Spinbox(
+  #     master=self.window,
+  #     label="loop",
+  #     place=(125, 75 + 25 * i),
+  #     from_=1,
+  #     to=10000,
+  #     interval=1,
+  #     init=5
+  #   )
+
+class Measure_frame_sub():
+  def __init__(self, **kwargs):
+    super().__init__(**kwargs)
+    self.config(relief="groove", width=80, height=200, bd=2)
+    self.place(10, 10)
+
+  def pos_label(self):
+    for i, ins in enumerate(Block_label_main.instances):
+      new_label = Block_label_sub(master=self, parent=ins)
+      new_label.place(0, 25*i)
+
+
+
+class Measure_box_cnf_buttons():
+  def __init__(self, master, frame):
+    self.master = master
+    self.frame = frame
     self.add_button = tk.Button(master=self.master, text="Add", command=self.make_block)
     self.del_button = tk.Button(master=self.master, text="Del", command=self.del_block)
     self.del_button["state"] = tk.DISABLED
@@ -214,54 +282,141 @@ class Measure_box_frame(tk.Frame):
     self.add_button.place(x=440, y=250)
     self.del_button.place(x=480, y=250)
     self.cycle_button.place(x=400, y=250)
-    self.place(x=430, y=0)
 
   def make_block(self):
-    new_block = Block_label(master=self)
+    new_block = Block_label_main(master=self.frame)
     self.del_button["state"] = tk.NORMAL
     self.master.update_idletasks()
 
   def del_block(self):
-    for instance in Block_label.instances:
+    for instance in Block_label_main.instances:
       if instance.block.selected == True:
         Measure_block.instances.remove(instance.block)
         del instance.block
-        Block_label.instances.remove(instance)
+        Block_label_main.instances.remove(instance)
         instance.destroy()
         # self.measure_frame.del_block()
     if len(Measure_block.instances)==1:
       self.del_button["state"] = tk.DISABLED
-    Block_label.reset_pos()
+    Block_label_main.reset_pos()
 
   def open_cycle(self):
-    self.window = tk.Toplevel(self.master)
-    self.window.grab_set()
+    Window_sub(self.frame.measure_list, self.master)
 
-# class Measure_box_frame_option(tk.Frame):
-#   def __init__(self, master):
+class Window_sub(tk.Toplevel):
+  def __init__(self, measure_list, master=None):
+    super().__init__(master)
+    self.grab_set()
+    self.geometry("300x300")
+    self.cycle = measure_list.cycles
+    self.protocol("WM_DELETE_WINDOW", self.on_close)
+    #ウィジット配置
+    Measure_frame_sub(master=self)
+    num_lp = Spinbox(
+      master=self,
+      label="loop",
+      # place=(125, 75 + 25 * i),
+      from_=1,
+      to=10000,
+      interval=1,
+      init=5
+    )
+    num_lp.place(125, 75)
+    cyc_frame = Cycle_frame(cycles=self.cycle, master=self)
+    Cycle_cnf_buttons(master=self, cycle_frame=cyc_frame)
+
+  def on_close(self):
+    Cycle_label.instances = []
+    Cycle_label.num = 0
+
+
+class Cycle_frame(tk.frame):
+  def __init__(self, cycles, **kwargs):
+    super().__init__(**kwargs)
+    self.config(relief="groove", width=80, height=200, bd=2)
+    self.place(200, 10)
+    for cycle in cycles:
+      Cycle_label(cycle)
+
+class Cycle_cnf_buttons():
+  def __init__(self, master, cycle_frame):
+    self.master = master
+    self.cycle_frame = cycle_frame
+    self.add_button = tk.Button(master=self.master, text="Add", command=self.make_cycle)
+    self.del_button = tk.Button(master=self.master, text="Del", command=self.del_cycle)
+    self.del_button["state"] = tk.DISABLED
+    self.add_button.place(x=200, y=250)
+    self.del_button.place(x=250, y=250)
+
+  def make_cycle(self):
+    new_cycle = Cycle_label(master=self.cycle_frame)
+    self.del_button["state"] = tk.NORMAL
+    self.master.update_idletasks()
+
+  def del_cycle(self):
+    for instance in Cycle_label.instances:
+      if instance.selected == True:
+        Cycle.instances.remove(instance.block)
+        del instance.cycle
+        Cycle.instances.remove(instance)
+        instance.destroy()
+    if len(Cycle.instances)==1:
+      self.del_button["state"] = tk.DISABLED
+    Cycle_label.reset_pos()
+
+# class Block_label(tk.Label):
+#   instances = []
+#   num = 0
+
+#   def __init__(self, master=None):
 #     super().__init__(master)
-#     self.master=master
+#     self.master = master
+#     # Block_label.instances.append(self)
+#     # Block_label.num = Block_label.num + 1
+#     self.text=tk.StringVar(master=self, value=f"ブロック{Block_label.num}")
+#     self.config(
+#       textvariable=self.text,
+#       bg="white"
+#     )
+#     # self.block = self.master.measure_frame.make_block(Spinbox.instances)
+#     # self.block = Measure_block()
+#     # self.pack(side=tk.TOP)
+#     self.place(x=0, y=20*(len(Block_label.instances)))
 
-class Block_label(tk.Label):
+    # self.bind("<ButtonPress-1>", self.open_setting)
+
+  # @classmethod
+  # def reset_bg(cls):
+  #   for instance in cls.instances:
+  #     instance.config(bg="white")
+
+  # @classmethod
+  # def reset_pos(cls):
+  #   for i, instance in enumerate(cls.instances):
+  #     instance.place(x=0, y=20 * (i+1))
+
+  # def open_setting(self, event=None):
+  #   self.block.select(Spinbox.instances)
+  #   Block_label.reset_bg()
+  #   self.config(bg="red")
+
+class Block_label_main(tk.Label):
   instances = []
   num = 0
 
-  def __init__(self, master=None):
-    super().__init__(master)
-    self.master = master
-    Block_label.instances.append(self)
-    Block_label.num = Block_label.num + 1
-    self.text=tk.StringVar(master=self, value=f"ブロック{Block_label.num}")
+  def __init__(self, master, **kwargs):
+    super().__init__(master, **kwargs)
+    Block_label_main.instances.append(self)
+    Block_label_main.num = Block_label_main.num + 1
+    self.selected = False
+    self.text=tk.StringVar(master=self, value=f"ブロック{Block_label_main.num}")
     self.config(
       textvariable=self.text,
       bg="white"
     )
-    self.block = self.master.measure_frame.make_block(Spinbox.instances)
-    # self.block = Measure_block()
-    # self.pack(side=tk.TOP)
-    self.place(x=0, y=20*(len(Block_label.instances)))
-
+    self.block = self.master.measure_list.make_block(Spinbox.instances)
     self.bind("<ButtonPress-1>", self.open_setting)
+    self.place(x=0, y=20*(len(Block_label_main.instances)))
 
   @classmethod
   def reset_bg(cls):
@@ -275,7 +430,82 @@ class Block_label(tk.Label):
 
   def open_setting(self, event=None):
     self.block.select(Spinbox.instances)
-    Block_label.reset_bg()
+    Block_label_main.reset_bg()
+    self.config(bg="red")
+
+class Block_label_sub(tk.Label):
+  instances = []
+
+  def __init__(self, master, parent, **kwargs):
+    super().__init__(master, **kwargs)
+    self.selected = False
+    # self.block = self.master.measure_frame.make_block(Spinbox.instances) #参照ミスる可能性あり
+    self.parent_label = parent
+    self.block = self.parent_label.block
+    self.bind("<ButtonPress-1>", self.select)
+    # self.place(x=0, y=20*(len(Block_label_sub.instances)))
+
+  @classmethod
+  def reset_bg(cls):
+    for instance in cls.instances:
+      instance.config(bg="white")
+
+  def select(self, event=None):
+    self.selected = not self.selected
+    # for cycle in Cycle_label.instances:
+    #   if cycle.selected:
+    cycle_list = [ins for ins in Cycle_label.instances if ins.selected]
+    cycle_list[0]
+    if self.selected:
+      cycle_list[0].cycle.set(self.block)
+      self.config(bg="red")
+    else:
+      cycle_list[0].cycle.remove(self.block)
+      self.config(bg="white")
+
+class Cycle_label(tk.Label):
+  instances = []
+  num = 0
+
+  def __init__(self, cycle, **kwargs):
+    super().__init__(**kwargs)
+    Cycle_label.instances.append(self)
+    Cycle_label.num = Cycle_label.num + 1
+    self.cycle = cycle
+    # self.loop = self.cycle.loop
+    self.selected = False
+    self.text=tk.StringVar(master=self, value=f"サイクル{Cycle_label.num}")
+    self.config(
+      textvariable=self.text,
+      bg="white"
+    )
+    self.place(x=0, y=20*(len(Cycle_label.instances)))
+
+    self.bind("<ButtonPress-1>", self.open_setting)
+
+  @classmethod
+  def reset_bg(cls):
+    for instance in cls.instances:
+      instance.selected = False
+      instance.config(bg="white")
+
+  @classmethod
+  def reset_pos(cls):
+    for i, instance in enumerate(cls.instances):
+      instance.place(x=0, y=20 * (i+1))
+
+  def open_setting(self, event=None):
+    # self.cycle.select(Spinbox.instances)
+    Cycle_label.reset_bg()
+    Block_label_sub.reset_bg()
+    contents = self.cycle.read() #Cycle.contents = []
+    for block in Block_label_sub:
+      for content in contents:
+        if block.block == content:
+          block.select()
+    Window_sub.num_lp.delete(0, tk.END)#参照ミスる可能性あり
+    Window_sub.num_lp.insert(0, self.cycle.loop)
+    self.selected = True
     self.config(bg="red")
 
 class Statusbar(tk.Label):
