@@ -89,6 +89,7 @@ class Cycle():
     self.cycle_contents = []
     self.expect_time = 0.0
     self.loop = loop
+    Cycle.instances.append(self)
 
   @classmethod
   def sort(cls):

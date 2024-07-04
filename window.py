@@ -49,7 +49,7 @@ class Application(tk.Frame):
         self.check_buttons,
         self.combo_boxes
       ],
-      measure_blocks=self.measure_box_frame.measure_frame,
+      measure_blocks=self.measure_box_frame.measure_list,
       datas=self.datas,
       statusbar=self.statusbar
       )
