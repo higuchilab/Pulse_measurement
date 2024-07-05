@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+from tkinter import messagebox
 from controller import set_folder_func, exc_run_func, stop_func
 from algorithm import Measure_block, Measure_list, Cycle
 
@@ -289,7 +290,7 @@ class Measure_frame_sub(tk.Frame):
     super().__init__(master, **kwargs)
     self.config(relief="groove", width=80, height=200, bd=2)
     for block_label in Block_label_main.instances:
-      Block_label_sub(self, block_label)
+      Block_label_sub(master=self, parent=block_label)
     self.place(x=10, y=10)
 
   def pos_label(self):
@@ -337,7 +338,7 @@ class Window_sub(tk.Toplevel):
     super().__init__(master)
     self.grab_set()
     self.geometry("300x300")
-    self.cycle = measure_list.cycles
+    self.cycles = measure_list.cycles
     self.protocol("WM_DELETE_WINDOW", self.on_close)
     #ウィジット配置
     Measure_frame_sub(master=self)
@@ -351,14 +352,33 @@ class Window_sub(tk.Toplevel):
       init=5
     )
     # self.num_lp.place(x=125, y=75)
-    cyc_frame = Cycle_frame(cycles=self.cycle, master=self, lp=self.num_lp)
+    cyc_frame = Cycle_frame(cycles=self.cycles, master=self, lp=self.num_lp)
     Cycle_cnf_buttons(master=self, cycle_frame=cyc_frame, lp=self.num_lp)
 
   def on_close(self):
-    Cycle_label.instances = []
-    Cycle_label.num = 0
-    Block_label_sub.instances = []
-    super().destroy()
+    error_list = []
+    for ins in Cycle.instances:
+      index_list = [Measure_block.instances.index(block) for block in ins.cycle_contents]
+      try:
+        if not sum(index_list) == (len(index_list)-1) * (len(index_list)) / 2 + index_list[0] * len(index_list):
+          error_list.append(ins)
+      except:
+        pass
+
+    if len(error_list)==0:
+      Cycle_label.instances = []
+      Cycle_label.num = 0
+      Block_label_sub.instances = []
+      Spinbox_sub.instances = []
+      super().destroy()
+    else:
+      error_txt = ""
+      for cycle in error_list:
+        for label in Cycle_label.instances:
+          if label.cycle == cycle:
+            error_txt = error_txt + label.text.get() + " "
+      messagebox.showerror("エラー",f"{error_txt}の選択に飛びがあります")
+
 
 
 class Cycle_frame(tk.Frame):
@@ -368,7 +388,7 @@ class Cycle_frame(tk.Frame):
     self.config(relief="groove", width=80, height=200, bd=2)
     self.place(x=200, y=10)
     for cycle in cycles:
-      Cycle_label(cycle=cycle, lp=self.lp)
+      Cycle_label(cycle=cycle, lp=self.lp, master=self)
 
 class Cycle_cnf_buttons():
   def __init__(self, master, cycle_frame, lp):
@@ -475,6 +495,10 @@ class Block_label_sub(tk.Label):
     Block_label_sub.instances.append(self)
     # self.block = self.master.measure_frame.make_block(Spinbox.instances) #参照ミスる可能性あり
     self.parent_label = parent
+    self.config(
+      textvariable=self.parent_label.text,
+      bg="white"
+      )
     self.block = self.parent_label.block
     self.bind("<ButtonPress-1>", self.select)
     self.place(x=0, y=20*(len(Block_label_sub.instances)))
@@ -489,7 +513,7 @@ class Block_label_sub(tk.Label):
     # for cycle in Cycle_label.instances:
     #   if cycle.selected:
     cycle_list = [ins for ins in Cycle_label.instances if ins.selected]
-    cycle_list[0]
+    # cycle_list[0]
     if self.selected:
       cycle_list[0].cycle.set(self.block)
       self.config(bg="red")
@@ -540,9 +564,8 @@ class Cycle_label(tk.Label):
     for block in Block_label_sub.instances:
       for content in contents:
         if block.block == content:
-          block.select()
-    # self.lp.delete(0, tk.END)#参照ミスる可能性あり
-    # self.lp.insert(0, self.cycle.loop)
+          block.selected = True
+          block.config(bg="red")
     self.selected = True
     self.config(bg="red")
 

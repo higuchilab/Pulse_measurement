@@ -105,7 +105,7 @@ class Cycle():
 
   def set(self, content):
     self.cycle_contents.append(content)
-    self.expect_time = self.expect_time + content.expect_time
+    self.expect_time = self.expect_time + content.estimate_time()
     self.cycle_contents.sort(key=attrgetter('index'))
 
   def select(self, spinbox):
@@ -130,7 +130,7 @@ class Measure_list():
   def cluc_tot_time(self):
     self.expect_time = 0.0
     for instance in self.blocks:
-      self.expect_time = self.expect_time + instance.expect_time
+      self.expect_time = self.expect_time + instance.estimate_time()
 
     for instance in self.cycles:
       self.expect_time = self.expect_time + instance.expect_time
