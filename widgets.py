@@ -49,16 +49,12 @@ class TextBoxes():
     return self.textbox #{"forderpath" : "", "filename" : ""}
 
 class Spinbox(tk.Spinbox):
-  # instances = []
   
   def __init__(self, master=None, label="", place=(0,0), from_=-1.0, to=1.0, interval=0.1, init=0.0):
     super().__init__(master, width=7, format='%3.1f')
     self.master = master
     self.label = label
-    # Spinbox.instances.append(self)
-
     self.value = tk.DoubleVar(master=self)
-    # self.value.trace_add("write", self.callback)
     self.config(
       textvariable=self.value,
       from_=from_,
@@ -71,11 +67,6 @@ class Spinbox(tk.Spinbox):
   @classmethod
   def get_all(cls):
     return cls.instances
-  
-  # def callback(self, arg1, arg2, arg3):
-  #   for instance in Measure_block.instances:
-  #     if instance.selected:
-  #       instance.params[self.label] = self.get()
 
   def ref_instances(self):
     return Spinbox.instances
@@ -105,47 +96,6 @@ class Spinbox_sub(Spinbox):
     for instance in Cycle.instances:
       if instance.selected:
         instance.loop = self.get()
-
-
-# class SpinBoxes():
-#   def __init__(self, master=None):
-#     self.master = master
-#     self.spinbox = {}
-#     self.spinbox_config = {
-#       #{tag :[min, max, step, init]}
-#       "V_top" :[-30.0, 30.0, 0.1, 1.0],
-#       "top_time" :[-30.0, 30.0, 0.1, 5.0],
-#       "V_bot" :[-30.0, 30.0, 0.1, 0.0],
-#       "bot_time" :[0.0, 10000.0, 0.1, 5.0],
-#       "ループ回数":[1, 10000, 1, 5],
-#       "インターバル(おしり)":[1, 10000, 0, 10],
-#       }
-#     self.create(self.spinbox_config)
-
-#   def create(self, config):
-#     for i, (key, var) in enumerate(config.items()):
-#       value = tk.DoubleVar()
-#       value.trace_add("write", self.callback)
-#       self.spinbox[key] = tk.Spinbox(
-#         master=self.master,
-#         width = 7,
-#         format = '%3.1f',
-#         from_ = var[0],
-#         to = var[1],
-#         increment = var[2],
-#         textvariable=value
-#         )
-#       self.spinbox[key].place(x= 125, y= 75 + 25*i)
-#       self.spinbox[key].insert(0, var[3])
-
-#   def get(self):
-#     return self.spinbox # {"V_top", "top_time", "V_bot", "bot_time", "ループ回数", "インターバル(おしり)"}
-  
-#   def callback(self, arg1, arg2, arg3):
-#     for instance in Measure_block.instances:
-#       if instance.seledted:
-#         instance.V_top = arg1
-
 
 class Buttons():
   def __init__(self, master=None, read_widgets=None, measure_blocks=None, datas=None, statusbar=None):
@@ -234,56 +184,8 @@ class Measure_box_frame(tk.Frame):
     self.measure_list = Measure_list()
     self.init_block = Block_label_main(master=self)
     self.init_block.open_setting()
-    # self.add_button = tk.Button(master=self.master, text="Add", command=self.make_block)
-    # self.del_button = tk.Button(master=self.master, text="Del", command=self.del_block)
-    # self.del_button["state"] = tk.DISABLED
-    # self.cycle_button = tk.Button(master=self, text="Cycle set", command=self.open_cycle)
-    # self.add_button.place(x=440, y=250)
-    # self.del_button.place(x=480, y=250)
-    # self.cycle_button.place(x=400, y=250)
     Measure_box_cnf_buttons(master=self.master, frame=self)
     self.place(x=430, y=0)
-
-  # def make_block(self):
-  #   new_block = Block_label(master=self)
-  #   self.del_button["state"] = tk.NORMAL
-  #   self.master.update_idletasks()
-
-  # def del_block(self):
-  #   for instance in Block_label.instances:
-  #     if instance.block.selected == True:
-  #       Measure_block.instances.remove(instance.block)
-  #       del instance.block
-  #       Block_label.instances.remove(instance)
-  #       instance.destroy()
-  #       # self.measure_frame.del_block()
-  #   if len(Measure_block.instances)==1:
-  #     self.del_button["state"] = tk.DISABLED
-  #   Block_label.reset_pos()
-
-  # def open_cycle(self):
-  #   self.window = tk.Toplevel(self.master)
-  #   self.window.grab_set()
-  #   self.window.geometry("300x300")
-  #   # num_lp = tk.Spinbox(self.window, )
-
-  #   # self.spinbox_config = {
-  #   #   #{tag :[min, max, step, init]}
-  #   #   "loop":[1, 10000, 1, 5]
-  #   #   }
-  #   # for i, (key, value) in enumerate(self.spinbox_config.items()):
-
-  #   #ウィジット配置
-
-  #   num_lp = Spinbox(
-  #     master=self.window,
-  #     label="loop",
-  #     place=(125, 75 + 25 * i),
-  #     from_=1,
-  #     to=10000,
-  #     interval=1,
-  #     init=5
-  #   )
 
 class Measure_frame_sub(tk.Frame):
   def __init__(self, master, **kwargs):
@@ -297,8 +199,6 @@ class Measure_frame_sub(tk.Frame):
     for i, ins in enumerate(Block_label_main.instances):
       new_label = Block_label_sub(master=self, parent=ins)
       new_label.place(x=0, y=25*i)
-
-
 
 class Measure_box_cnf_buttons():
   def __init__(self, master, frame):
@@ -351,7 +251,6 @@ class Window_sub(tk.Toplevel):
       interval=1,
       init=5
     )
-    # self.num_lp.place(x=125, y=75)
     cyc_frame = Cycle_frame(cycles=self.cycles, master=self, lp=self.num_lp)
     Cycle_cnf_buttons(master=self, cycle_frame=cyc_frame, lp=self.num_lp)
 
@@ -417,42 +316,6 @@ class Cycle_cnf_buttons():
       self.del_button["state"] = tk.DISABLED
     Cycle_label.reset_pos()
 
-# class Block_label(tk.Label):
-#   instances = []
-#   num = 0
-
-#   def __init__(self, master=None):
-#     super().__init__(master)
-#     self.master = master
-#     # Block_label.instances.append(self)
-#     # Block_label.num = Block_label.num + 1
-#     self.text=tk.StringVar(master=self, value=f"ブロック{Block_label.num}")
-#     self.config(
-#       textvariable=self.text,
-#       bg="white"
-#     )
-#     # self.block = self.master.measure_frame.make_block(Spinbox.instances)
-#     # self.block = Measure_block()
-#     # self.pack(side=tk.TOP)
-#     self.place(x=0, y=20*(len(Block_label.instances)))
-
-    # self.bind("<ButtonPress-1>", self.open_setting)
-
-  # @classmethod
-  # def reset_bg(cls):
-  #   for instance in cls.instances:
-  #     instance.config(bg="white")
-
-  # @classmethod
-  # def reset_pos(cls):
-  #   for i, instance in enumerate(cls.instances):
-  #     instance.place(x=0, y=20 * (i+1))
-
-  # def open_setting(self, event=None):
-  #   self.block.select(Spinbox.instances)
-  #   Block_label.reset_bg()
-  #   self.config(bg="red")
-
 class Block_label_main(tk.Label):
   instances = []
   num = 0
@@ -493,7 +356,6 @@ class Block_label_sub(tk.Label):
     super().__init__(master, **kwargs)
     self.selected = False
     Block_label_sub.instances.append(self)
-    # self.block = self.master.measure_frame.make_block(Spinbox.instances) #参照ミスる可能性あり
     self.parent_label = parent
     self.config(
       textvariable=self.parent_label.text,
@@ -510,10 +372,7 @@ class Block_label_sub(tk.Label):
 
   def select(self, event=None):
     self.selected = not self.selected
-    # for cycle in Cycle_label.instances:
-    #   if cycle.selected:
     cycle_list = [ins for ins in Cycle_label.instances if ins.selected]
-    # cycle_list[0]
     if self.selected:
       cycle_list[0].cycle.set(self.block)
       self.config(bg="red")
@@ -533,8 +392,6 @@ class Cycle_label(tk.Label):
       self.cycle = Cycle()
     else:
       self.cycle = cycle
-    # self.loop = self.cycle.loop
-    # self.lp = lp
     self.selected = False
     self.text=tk.StringVar(master=self, value=f"サイクル{Cycle_label.num}")
     self.config(
