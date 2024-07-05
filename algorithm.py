@@ -95,6 +95,11 @@ class Cycle():
   def sort(cls):
     Cycle.instances.sort(key=attrgetter('cycle_contents[0].index'))
 
+  @classmethod
+  def reset_selected(cls):
+    for instance in cls.instances:
+      instance.selected = False
+
   def read(self):
     return self.cycle_contents
 
@@ -102,6 +107,12 @@ class Cycle():
     self.cycle_contents.append(content)
     self.expect_time = self.expect_time + content.expect_time
     self.cycle_contents.sort(key=attrgetter('index'))
+
+  def select(self, spinbox):
+    Cycle.reset_selected()
+    spinbox.delete(0, tk.END)
+    spinbox.insert(0, self.loop)
+    self.selected = True
 
   def remove(self, content):
     self.cycle_contents.remove(content)

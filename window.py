@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
-from widgets import Labels, TextBoxes, Spinbox, Buttons, CheckButtons, ComboBoxes, Measure_box_frame, Statusbar
+from widgets import Labels, TextBoxes, Spinbox_main, Buttons, CheckButtons, ComboBoxes, Measure_box_frame, Statusbar
 from data import Datas
 
 class Application(tk.Frame):
@@ -25,7 +25,7 @@ class Application(tk.Frame):
       "interval":[1, 10000, 0, 10],
       }
     for i, (key, value) in enumerate(self.spinbox_config.items()):
-      Spinbox(
+      Spinbox_main(
         master=self.master,
         label=key,
         place=(125, 75 + 25 * i),
