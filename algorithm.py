@@ -45,7 +45,7 @@ class Measure_block():
   # def estimate_point(self):
   #   return (self.params["bot_time"] + self.params["top_time"]) * self.params["loop"] + self.params["interval"]
 
-  def measure(self, V_set, measure_times, dev, datas):
+  def measure(self, V_set, measure_times, dev, datas, start_time):
     interval = 0.041463354054055365
     measure_points = int(measure_times/interval)
     self.stop_flag = False
@@ -56,7 +56,7 @@ class Measure_block():
         
         dev.write(f"SOV{V_set}")
         dev.write("*TRG")
-        datas.time_list.append(time.perf_counter())
+        datas.time_list.append(time.perf_counter()-start_time)
         
         A=dev.query("N?")
         A_=float(A[3:-2])
@@ -66,12 +66,12 @@ class Measure_block():
         V_=float(V[3:-2])
         datas.V_list.append(V_)
 
-  def run(self, dev, datas):
+  def run(self, dev, datas, start_time):
     for _ in range(int(float(self.params["loop"]))):
-      self.measure(float(self.params["V_bot"]), float(self.params["bot_time"]), dev, datas)
-      self.measure(float(self.params["V_top"]), float(self.params["top_time"]), dev, datas)
+      self.measure(float(self.params["V_bot"]), float(self.params["bot_time"]), dev, datas, start_time)
+      self.measure(float(self.params["V_top"]), float(self.params["top_time"]), dev, datas, start_time)
 
-    self.measure(float(self.params["V_bot"]), float(self.params["interval"]), dev, datas)
+    self.measure(float(self.params["V_bot"]), float(self.params["interval"]), dev, datas, start_time)
 
   def select(self, spinbox_instances):
     Measure_block.reset_selected()
@@ -120,10 +120,10 @@ class Cycle():
   def remove(self, content):
     self.cycle_contents.remove(content)
 
-  def run(self, dev, datas):
+  def run(self, dev, datas, start_time):
     for _ in range(int(self.loop)):
       for block in self.cycle_contents:
-        block.run(dev, datas)
+        block.run(dev, datas, start_time)
 
 class Measure_list():
   def __init__(self):
@@ -175,4 +175,4 @@ class Measure_list():
 
     start_time = time.perf_counter()
     for measure in self.measure_list:
-      measure.run(dev, datas)
+      measure.run(dev, datas, start_time)
