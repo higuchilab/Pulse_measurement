@@ -4,6 +4,7 @@ from operator import attrgetter
 
 class Measure_block():
   instances = []
+  stop_flag = False
 
   def __init__(self, loop=5, V_top=1.0, V_base=0.0, top_time=10.0, base_time=10.0, interval=10.0, spinbox_instances=None):
     self.set(len(Measure_block.instances), loop, V_top, V_base, top_time, base_time, interval, spinbox_instances)
@@ -33,22 +34,24 @@ class Measure_block():
       "loop" : loop,
       "interval" : interval
     }
-    # self.loop = loop
-    # self.V_top = V_top
-    # self.V_base = V_base
-    # self.top_time = top_time
-    # self.bottom_time = base_time
-    # self.interval = interval
-    # self.estimate_time = (self.params["bot_time"] + self.params["top_time"]) * self.params["loop"] + self.params["interval"]
+
     self.select(spinbox_instances)
 
   def estimate_time(self):
-    return (self.params["bot_time"] + self.params["top_time"]) * self.params["loop"] + self.params["interval"]
+    # for key, var in self.params:
+    #   print("{}, {}".format(var, type(var)))
+    return (float(self.params["bot_time"]) + float(self.params["top_time"])) * int(float(self.params["loop"])) + float(self.params["interval"])
+  
+  # def estimate_point(self):
+  #   return (self.params["bot_time"] + self.params["top_time"]) * self.params["loop"] + self.params["interval"]
 
   def measure(self, V_set, measure_times, dev, datas):
+    interval = 0.041463354054055365
+    measure_points = int(measure_times/interval)
     self.stop_flag = False
-    for _ in range(measure_times):
-        if self.stop_flag == True:
+    print(measure_points)
+    for _ in range(measure_points):
+        if Measure_block.stop_flag == True:
             break
         
         dev.write(f"SOV{V_set}")
@@ -64,11 +67,11 @@ class Measure_block():
         datas.V_list.append(V_)
 
   def run(self, dev, datas):
-    for _ in range(int(self.params["loop"])):
-      self.measure(self.params["V_bot"], self.params["bot_time"], dev, datas)
-      self.measure(self.params["V_top"], self.params["top_time"], dev, datas)
+    for _ in range(int(float(self.params["loop"]))):
+      self.measure(float(self.params["V_bot"]), float(self.params["bot_time"]), dev, datas)
+      self.measure(float(self.params["V_top"]), float(self.params["top_time"]), dev, datas)
 
-    self.measure(self.params["V_bot"], self.params["interval"], dev, datas)
+    self.measure(float(self.params["V_bot"]), float(self.params["interval"]), dev, datas)
 
   def select(self, spinbox_instances):
     Measure_block.reset_selected()
@@ -127,23 +130,28 @@ class Measure_list():
     self.blocks = Measure_block.instances
     self.cycles = Cycle.instances
 
+  # def num_point(self):
+  #   self.expect_point = 0
+  #   for instance in self.blocks:
+  #     self.expect_point = self.expect_point + instance.estimate_point()
+
+  #   for instance in self.cycles:
+  #     self.expect_point = self.expect_point + instance.expect_point
+  #   return self.expect_point
+
   def cluc_tot_time(self):
     self.expect_time = 0.0
-    for instance in self.blocks:
-      self.expect_time = self.expect_time + instance.estimate_time()
+    for block in self.blocks:
+      self.expect_time = self.expect_time + block.estimate_time()
 
-    for instance in self.cycles:
-      self.expect_time = self.expect_time + instance.expect_time
+    for cycle in self.cycles:
+      self.expect_time = self.expect_time + cycle.expect_time
+    return self.expect_time
 
   def make_block(self, spinbox_instances):
     new_block = Measure_block(spinbox_instances=spinbox_instances)
     self.blocks = Measure_block.instances
     return new_block
-
-  # def del_block(self):
-  #   for instance in Measure_block.instances:
-  #     if instance.selected == True:
-  #       instance.delete()
 
   def make_cycle(self):
     new_cycle = Cycle()
@@ -162,8 +170,9 @@ class Measure_list():
     self.measure_list = self.blocks
     count = 0
     for cycle in self.cycles:
-      self.measure_list.insert(cycle[0].index - count, cycle)
-      count = count + len(cycle) - 1
-    
+      self.measure_list.insert(cycle.cycle_contents[0].index - count, cycle)
+      count = count + len(cycle.cycle_contents) - 1
+
+    start_time = time.perf_counter()
     for measure in self.measure_list:
       measure.run(dev, datas)

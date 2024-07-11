@@ -34,4 +34,9 @@ class Datas():
         ws.cell(i, 3, A_val)
           
       wb.save(filepath)
-      wb.close()    
+      wb.close()
+
+  def reset(self):
+    self.time_list = []
+    self.A_list = []
+    self.V_list = []

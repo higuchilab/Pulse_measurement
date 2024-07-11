@@ -67,7 +67,7 @@ class Spinbox(tk.Spinbox):
   @classmethod
   def get_all(cls):
     return cls.instances
-
+  
   def ref_instances(self):
     return Spinbox.instances
 
@@ -90,6 +90,7 @@ class Spinbox_sub(Spinbox):
   def __init__(self, **kwarg):
     super().__init__(**kwarg)
     Spinbox_sub.instances.append(self)
+    self.delete(0, tk.END)
     self.value.trace_add("write", self.callback)
 
   def callback(self, arg1, arg2, arg3):
@@ -106,11 +107,17 @@ class Buttons():
     self.button = {}
     self.button_config = {
       #{tag :[wid, pad_EW, pad_NS, x, y, command]}
-      "参照": [8, 0, 0, 360, 9, set_folder_func],
+      "参照": [8, 0, 0, 360, 9, set_folder_func(self.read_widgets[0])],
       "実行": [12, 0, 10, 125, 225, exc_run_func(self.read_widgets, self.blocks, self.datas, statusbar)],
-      "強制終了": [12, 0, 10, 225, 225, stop_func],
+      "強制終了": [12, 0, 10, 225, 225, self.stop(statusbar)],
       }
     self.create(self.button_config)
+
+  def stop(self, statusbar):
+    def inner():
+      Measure_block.stop_flag = True
+      stop_func(statusbar)
+    return inner
 
   def create(self, config):
       for key, var in config.items():
@@ -192,13 +199,15 @@ class Measure_frame_sub(tk.Frame):
     super().__init__(master, **kwargs)
     self.config(relief="groove", width=80, height=200, bd=2)
     for block_label in Block_label_main.instances:
-      Block_label_sub(master=self, parent=block_label)
+      Block_label_sub(self, block_label)
     self.place(x=10, y=10)
 
   def pos_label(self):
     for i, ins in enumerate(Block_label_main.instances):
       new_label = Block_label_sub(master=self, parent=ins)
       new_label.place(x=0, y=25*i)
+
+
 
 class Measure_box_cnf_buttons():
   def __init__(self, master, frame):
@@ -224,7 +233,6 @@ class Measure_box_cnf_buttons():
         del instance.block
         Block_label_main.instances.remove(instance)
         instance.destroy()
-        # self.measure_frame.del_block()
     if len(Measure_block.instances)==1:
       self.del_button["state"] = tk.DISABLED
     Block_label_main.reset_pos()
@@ -238,7 +246,7 @@ class Window_sub(tk.Toplevel):
     super().__init__(master)
     self.grab_set()
     self.geometry("300x300")
-    self.cycles = measure_list.cycles
+    self.cycle = measure_list.cycles
     self.protocol("WM_DELETE_WINDOW", self.on_close)
     #ウィジット配置
     Measure_frame_sub(master=self)
@@ -249,21 +257,17 @@ class Window_sub(tk.Toplevel):
       from_=1,
       to=10000,
       interval=1,
-      init=5
+      init=""
     )
-    cyc_frame = Cycle_frame(cycles=self.cycles, master=self, lp=self.num_lp)
+    cyc_frame = Cycle_frame(cycles=self.cycle, master=self, lp=self.num_lp)
     Cycle_cnf_buttons(master=self, cycle_frame=cyc_frame, lp=self.num_lp)
 
   def on_close(self):
     error_list = []
     for ins in Cycle.instances:
       index_list = [Measure_block.instances.index(block) for block in ins.cycle_contents]
-      try:
-        if not sum(index_list) == (len(index_list)-1) * (len(index_list)) / 2 + index_list[0] * len(index_list):
-          error_list.append(ins)
-      except:
-        pass
-
+      if not sum(index_list) == (len(index_list)-1) * len(index_list) / 2 + index_list[0] * len(index_list):
+        error_list.append(ins)
     if len(error_list)==0:
       Cycle_label.instances = []
       Cycle_label.num = 0
@@ -277,7 +281,6 @@ class Window_sub(tk.Toplevel):
           if label.cycle == cycle:
             error_txt = error_txt + label.text.get() + " "
       messagebox.showerror("エラー",f"{error_txt}の選択に飛びがあります")
-
 
 
 class Cycle_frame(tk.Frame):
@@ -356,11 +359,12 @@ class Block_label_sub(tk.Label):
     super().__init__(master, **kwargs)
     self.selected = False
     Block_label_sub.instances.append(self)
+    # self.block = self.master.measure_frame.make_block(Spinbox.instances) #参照ミスる可能性あり
     self.parent_label = parent
     self.config(
       textvariable=self.parent_label.text,
       bg="white"
-      )
+    )
     self.block = self.parent_label.block
     self.bind("<ButtonPress-1>", self.select)
     self.place(x=0, y=20*(len(Block_label_sub.instances)))
@@ -421,7 +425,7 @@ class Cycle_label(tk.Label):
     for block in Block_label_sub.instances:
       for content in contents:
         if block.block == content:
-          block.selected = True
+          block.selected =True
           block.config(bg="red")
     self.selected = True
     self.config(bg="red")

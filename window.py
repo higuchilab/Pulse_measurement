@@ -40,7 +40,7 @@ class Application(tk.Frame):
 
     self.measure_box_frame = Measure_box_frame(master=master)
 
-    self.statusbar = Statusbar(master=self)
+    self.statusbar = Statusbar(master=self.master)
 
     self.buttons = Buttons(
       master=self.master,
