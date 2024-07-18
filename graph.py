@@ -1,69 +1,53 @@
 import matplotlib.pyplot as plt
+import numpy as np
 import time
+import pandas as pd
+from widgets import Measure_box_frame
 
-def graph(x_list, y1_list, y2_list, plot, scatter):
-    def para(dic):
-        return {f'{k1}.{k2}' : v for k1, d in dic.items() for k2, v in d.items()} 
-    config = {
-        "font" :{
-            "family":"Times New Roman",
-            "size":14
-            },
-        "xtick" :{
-                "direction":"in",
-                "top":True,
-                "major.width":1.2,
-                "labelsize":20.0
-            },
-        "ytick" :{
-                "direction":"in",
-                "right":True,
-                "major.width":1.2,
-                "labelsize":20.0
-            },
-        "axes" :{
-            "linewidth":1.2,
-            "labelpad":10
-            },
-        
-        "figure" :{
-            "dpi":150
-                }
-        }
-    
-    plt.rcParams.update(para(config))
-    
-    fig=plt.figure()
-    ax1=fig.add_subplot(2, 1, 1)
-    ax2=fig.add_subplot(2, 1, 2)
-    
-    if plot == True:
-        ax1.plot(x_list, y1_list)
-        ax2.plot(x_list, y2_list)
-    if scatter == True:
-        ax1.scatter(x_list, y1_list)
-        ax2.scatter(x_list, y2_list)
-    
-    ax1.set_xlabel("Time [s]")
-    ax1.set_ylabel("Input Voltage [V]")
-    ax2.set_xlabel("Time [s]")
-    ax2.set_ylabel("Output Current [A]")
+def generate_square_wave(V_top, top_time, V_base, base_time, loop):
+    t_top = np.full(top_time, V_top)  # top_timeはサンプル数
+    t_base = np.full(base_time, V_base)  # base_timeはサンプル数
+    single_wave = np.concatenate((t_top, t_base))
+    waveform = np.tile(single_wave, loop)  # loop回数だけ繰り返し
+    return waveform
+
+def combine_waveforms_with_intervals(waveform_list, intervals):
+    combined_waveform = []
+
+    for i, wave in enumerate(waveform_list):
+        combined_waveform.append(wave)
+        if i < len(waveform_list) - 1:
+            interval_wave = np.full(intervals[i], 0)  # 各波形間の間隔
+            combined_waveform.append(interval_wave)
+
+    return np.concatenate(combined_waveform)
+
+def plot_waveform(t, wave, title="Combined Square Waves"):
+    plt.figure(figsize=(10, 4))
+    plt.plot(t, wave, label='Square Wave')
+    plt.title(title)
+    plt.xlabel('Sample Number')
+    plt.ylabel('Voltage [V]')
+    plt.grid(True)
+    plt.legend()
     plt.show()
 
-def livegraph(plot, scatter):
-    global livegraph_flag, time_list, A_list, V_list
+if __name__ == "__main__":
+    # Parameters for the square waves
+    #params_list = [{"V_top": 5, "top_time": 100, "V_base": 0, "base_time": 100, "loop": 3, "interval": 1000},{"V_top": 3, "top_time": 150, "V_base": -1, "base_time": 50, "loop": 2, "interval": 75}, {"V_top": 4, "top_time": 200, "V_base": 1, "base_time": 100, "loop": 4, "interval": 100}]
 
-    time.sleep(1.0)
-    while 1:
-        if livegraph_flag == True:
-            break
-        time_list_ = time_list
+    list_of_dics = [Measure_box_frame.Measure_list.blocks,Measure_box_frame.Measure_list.circle]
 
-        V_list_ = [V_list[i] for i in range(len(time_list_)-1)] 
-        A_list_ = [A_list[i] for i in range(len(time_list_)-1)]
-        interval_list = [time_list[i+1]-time_list[i] for i in range(len(time_list)-2)]
-        totaltime_list = [sum(interval_list[:i]) for i in range(len(interval_list)+1)]
-        
-        time.sleep(0.2)
-        
-        graph(totaltime_list, V_list_, A_list_, True, False)
+    #waveforms = [generate_square_wave(params["V_top"], params["top_time"], params["V_base"], params["base_time"], params["loop"]) for params in params_list]
+    #intervals = [params["interval"] for params in params_list]
+
+    waveforms = [generate_square_wave(list["V_top"], list["top_time"], list["V_base"], list["base_time"], list["loop"]) for list in list_of_dics]
+    intervals = [list["interval"] for list in list_of_dics]
+
+
+    combined_wave = combine_waveforms_with_intervals(waveforms, intervals)
+    total_samples = len(combined_wave)
+    t = np.arange(total_samples)
+
+    # Plot the combined square wave
+    plot_waveform(t, combined_wave, title="Combined Square Waves with Intervals")

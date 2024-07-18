@@ -4,7 +4,7 @@ import time
 import threading
 import os
 import pyvisa as visa
-from graph import graph, livegraph
+#from Pulse_measurement.graph2 import graph, livegraph
 from data import Datas
 
 interval_time = 0.041463354054055365#[s] 実行環境によって異なるので適時調整
