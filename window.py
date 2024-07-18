@@ -38,7 +38,7 @@ class Application(tk.Frame):
     self.check_buttons = CheckButtons(master=self.master)
     self.combo_boxes = ComboBoxes(master=self.master)
 
-    self.measure_box_frame = Measure_box_frame(master=master)
+    self.measure_box_frame = Measure_box_frame(master=master)#
 
     self.statusbar = Statusbar(master=self.master)
 

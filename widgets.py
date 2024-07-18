@@ -189,7 +189,7 @@ class Measure_box_frame(tk.Frame):
     super().__init__(master)
     self.master = master
     self.config(relief="groove", width=80, height=200, bd=2)
-    self.measure_list = Measure_list()
+    self.measure_list = Measure_list()#
     self.init_block = Block_label_main(master=self)
     self.init_block.open_setting()
     Measure_box_cnf_buttons(master=self.master, frame=self)
