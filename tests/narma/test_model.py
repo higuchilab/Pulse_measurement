@@ -1,0 +1,1 @@
+from src.narma.model import generate_narma2, generate_narma10, generate_narma_dataset

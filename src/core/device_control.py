@@ -5,11 +5,17 @@ GPIB_ADDRESS = 'GPIB1::1::INSTR'
 DEVICE_TIMEOUT = 5000
 
 # デバイスの初期化
-rm = visa.ResourceManager(VISA_DLL_PATH)
-dev = rm.open_resource(GPIB_ADDRESS)
-dev.timeout = DEVICE_TIMEOUT
+def device_connection(visa_dll_path, gpib_address: str):
+    try:
+        rm = visa.ResourceManager(VISA_DLL_PATH)
+        dev = rm.open_resource(GPIB_ADDRESS)
+        dev.timeout = DEVICE_TIMEOUT
+    except:
+        print('Caution: visa is stoped')
 
-def write_command(command: str) -> None:
+    return dev
+
+def write_command(command: str, dev) -> None:
     """デバイスにコマンドを送信します。"""
     dev.write(command)
 
