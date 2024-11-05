@@ -42,7 +42,7 @@ class NarmaParameters(TypedDict):
 
 
 class PulseParameters(TypedDict):
-    measure_blocks: list[MeasureBlock]
+    measure_blocks: MeasureBlocks
 
 
 def stop_func(statusbar: Any) -> None:
@@ -72,8 +72,11 @@ def pulse_run(
     except:
         raise ConnectionError(f"Fail to connect device '{GPIB_ADDRESS}'")
     
-    output = measure(measure_model=parameters["measure_blocks"], dev=dev)
-
+    prepare_device(dev)
+    measure_model = MeasureModel(parameters["measure_blocks"])
+    # print(measure_model.input_V_list)
+    output = measure(measure_model=measure_model, dev=dev)
+    print("測定終了")
     plot_data(output)
 
     if common_param["file_path"] == "":
@@ -104,7 +107,7 @@ def narma_run(
         dev = device_connection(visa_dll_path=VISA_DLL_PATH, gpib_address=GPIB_ADDRESS)
     except:
         raise ConnectionError(f"Fail to connect device '{GPIB_ADDRESS}'")
-
+    prepare_device(dev)
     #測定モデル作成
     measure_model_train = MeasureModel
     measure_model_train.make_model_from_narma_input_array(
@@ -275,7 +278,8 @@ def measure(measure_model: MeasureModel, dev: any) -> PulseMeasureOutputSingle:
 
         time.sleep(measure_model.tick)
 
-    output_data = PulseMeasureOutputSingle(voltage=np.ndarray(V_list), current=np.ndarray(A_list), time=np.ndarray(time_list))
+    # output_data = PulseMeasureOutputSingle(voltage=np.ndarray(V_list), current=np.ndarray(A_list), time=np.ndarray(time_list))
+    output_data = PulseMeasureOutputSingle(voltage=V_list, current=A_list, time=time_list)
 
     return output_data
 

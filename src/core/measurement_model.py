@@ -175,10 +175,9 @@ class MeasureBlocks():
 
 
 class MeasureModel():
-    def __init__(self):
-        self.__blocks = MeasureBlocks()
+    def __init__(self, blocks: MeasureBlock):
+        self.__blocks = blocks
         self.__tick = 0.1
-        self.__input_V_list = []
 
     @property
     def blocks(self) -> MeasureBlocks:
@@ -199,21 +198,23 @@ class MeasureModel():
         self.__tick = value
 
     @property
-    def input_V_list(self):
-        self.__make_measure_list()
-        return self.__input_V_list
+    def input_V_list(self) -> list:
+        return self.__make_measure_list()
 
     def __make_measure_list(self) -> NDArray:
         def block_measure_list(block: MeasureBlock) -> List[float]:
-            base = [block.V_base for _ in range(int(block.base_time / self.tick))]
-            top = [block.V_top for _ in range(int(block.top_time / self.tick))]
-            interval = [block.V_base for _ in range(int(block.interval / self.tick))]
-            v_list = base + top + interval
+            v_list = []
+            for _ in range(block.loop):
+                base = [block.V_base for _ in range(int(block.base_time / self.tick))]
+                top = [block.V_top for _ in range(int(block.top_time / self.tick))]
+                interval = [block.V_base for _ in range(int(block.interval / self.tick))]
+                v_list += base + top + interval
             return v_list
         
         standarded_block_list = self.blocks.export_standarded_blocks()
 
-        voltage_array = [voltages for block in standarded_block_list for voltages in block_measure_list[block]]
+        voltage_array = [voltages for block in standarded_block_list for voltages in block_measure_list(block)]
+        return voltage_array
 
         return np.ndarray(voltage_array)
 

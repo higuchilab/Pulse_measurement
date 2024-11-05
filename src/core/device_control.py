@@ -19,7 +19,7 @@ def write_command(command: str, dev) -> None:
     """デバイスにコマンドを送信します。"""
     dev.write(command)
 
-def prepare_device() -> None:
+def prepare_device(dev) -> None:
     """測定装置の準備を行います。"""
     start_commands = [
         "*RST",  # 初期化
@@ -33,7 +33,7 @@ def prepare_device() -> None:
     ]
     for command in start_commands:
         try:
-            write_command(command)
+            write_command(command, dev)
         except Exception as e:
             print(f"コマンド '{command}' の実行中にエラーが発生しました: {e}")
 

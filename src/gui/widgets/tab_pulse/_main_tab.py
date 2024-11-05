@@ -45,8 +45,8 @@ class TabPulse(Frame):
             )
         self.__tab_pulse_center.pack(side="left", expand=True, padx=5)
 
-        self.__tab_pulse_right = TabPulseRight(master=self)
-        self.__tab_pulse_right.pack(anchor=tk.N, side="right", expand=True, padx=5)
+        # self.__tab_pulse_right = TabPulseRight(master=self)
+        # self.__tab_pulse_right.pack(anchor=tk.N, side="right", expand=True, padx=5)
 
     @property
     def tree(self):

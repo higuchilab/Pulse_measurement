@@ -61,7 +61,7 @@ class Application(tk.Frame):
             file_path = filedialog.asksaveasfilename(
                 defaultextension=".xlsx",
                 filetypes=[("Excel files", "*.xlsx"), ("All files", "*.*")],
-                initialdir='/Users/kou/Desktop/',
+                initialdir=f'C:/Users/higuchi/Desktop/{self.form_top.input_measure_person}',
                 initialfile=f'{self.form_top.input_material_name}_{self.form_top.input_sample_num}_{self.form_top.input_option}'
             )
         print(file_path)
@@ -109,7 +109,7 @@ class Application(tk.Frame):
                 tot_time += (block.top_time + block.base_time + block.interval) * block.loop
 
             parameters: PulseParameters = {
-                'measure_blocks': standarded_pulse_blocks
+                'measure_blocks': self.pulse_blocks
             }
             self.timer_thread = Thread(target=timer, args=(tot_time, self.status_bar))
             self.timer_thread.start()
