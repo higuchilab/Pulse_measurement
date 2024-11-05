@@ -1,6 +1,6 @@
 import tkinter as tk
-from src.gui.widgets import Labels, TextBoxes, SpinboxMain, Buttons, CheckButtons, ComboBoxes, MeasureBoxFrame, Statusbar
-from src.core.data_processing import Datas
+from .widgets.old_pulse import Labels, TextBoxes, Buttons, CheckButtons, ComboBoxes, MeasureBoxFrame, Statusbar, CustomSpinbox, TopVoltageSpinbox, TopTimeSpinbox, BaseVoltageSpinbox, BaseTimeSpinbox, IntervalSpinbox, LoopSpinbox
+from ..core.data_processing import Datas
 
 class Application(tk.Frame):
     def __init__(self, master=None):
@@ -15,7 +15,7 @@ class Application(tk.Frame):
     def setup_gui(self):
         self.labels = Labels(master=self.master)
         self.text_boxes = TextBoxes(master=self.master)
-        self.setup_spinboxes()
+        # self.setup_spinboxes()
         self.check_buttons = CheckButtons(master=self.master)
         self.combo_boxes = ComboBoxes(master=self.master)
         self.measure_box_frame = MeasureBoxFrame(master=self.master)
@@ -32,7 +32,7 @@ class Application(tk.Frame):
             "interval": [1, 10000, 0, 10],
         }
         for i, (key, value) in enumerate(self.spinbox_config.items()):
-            SpinboxMain(
+            CustomSpinbox(
                 master=self.master,
                 label=key,
                 place=(125, 75 + 25 * i),
@@ -57,10 +57,10 @@ class Application(tk.Frame):
 
 
 if __name__ == "__main__":
-  root = tk.Tk()
-  root.geometry("530x300")
-  root.resizable(False, False)#ウィンドウサイズをフリーズ
-  root.lift()#最前面に表示
-  app = Application(master=root)
-  app.mainloop()
+    root = tk.Tk()
+    root.geometry("530x300")
+    root.resizable(False, False)#ウィンドウサイズをフリーズ
+    root.lift()#最前面に表示
+    app = Application(master=root)
+    app.mainloop()
 
