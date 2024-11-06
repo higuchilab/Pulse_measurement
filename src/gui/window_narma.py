@@ -11,7 +11,7 @@ if project_root not in sys.path:
 
 from src.gui.widgets import common_input_form, TabNarma, TabPulse, TabSweep, Statusbar
 
-from src.core.database import create_users_table, append_record_users, refer_users_table, create_materials_table, append_record_materials, refer_materials_table
+from src.core.database import create_users_table, append_record_users, refer_users_table, create_materials_table, append_record_materials, refer_materials_table, create_samples_table, append_record_samples, refer_samples_table
 
 from src.core.measurement import narma_run, NarmaParameters, CommonParameters, PulseParameters, timer, pulse_run
 
@@ -80,7 +80,9 @@ class Application(tk.Frame):
             append_record_materials(common_param['material'])
             self.form_top.materials = refer_materials_table()
 
-        #試料Noテーブルに登録
+        if not common_param['sample_num'] == "":
+            append_record_samples(common_param['material'], common_param['sample_num'])
+            self.form_top.samples = refer_samples_table(common_param['material'])
 
         selected_tab = self.notebook.index(self.notebook.select())
         if selected_tab == 0:
@@ -122,6 +124,7 @@ class Application(tk.Frame):
 if __name__ == "__main__":
     create_users_table()
     create_materials_table()
+    create_samples_table()
     root = tk.Tk()
     # root.geometry("530x300")
     # root.resizable(False, False)#ウィンドウサイズをフリーズ
