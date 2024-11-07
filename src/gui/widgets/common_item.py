@@ -1,9 +1,9 @@
 import tkinter as tk
-from tkinter import Label, Entry, Frame, Variable, Misc
-from tkinter.ttk import Combobox
+from tkinter import Label, Entry, Frame, Variable, Misc, Toplevel, Button
+from tkinter.ttk import Combobox, Treeview
 from typing import List, Dict
 
-from ...core.database import refer_users_table, refer_materials_table
+from ...core.database import refer_users_table, refer_materials_table, refer_samples_table, refer_pulse_templetes_table
 
 class ComboboxForm(Frame):
     def __init__(self,
@@ -76,12 +76,13 @@ class common_input_form(Frame):
         self._measure_person.pack(side="left", fill="y")
 
         self._input_material_name = tk.StringVar()
+        self._input_material_name.trace_add("write", self.update_sample_list)
         self._material_name = ComboboxForm(label_name='物質名', input_width=5, values=refer_materials_table(), master=self.form_top, textvariable=self._input_material_name)
         self._material_name.pack(side="left", fill="y")
 
         self._input_sample_num = tk.StringVar()
-        self.sample_num = ComboboxForm(label_name='試料No', input_width=5, values=['1'], master=self.form_top, textvariable=self._input_sample_num)
-        self.sample_num.pack(side="left", fill="y")
+        self._sample_num = ComboboxForm(label_name='試料No', input_width=5, values=refer_samples_table(self.input_material_name), master=self.form_top, textvariable=self._input_sample_num)
+        self._sample_num.pack(side="left", fill="y")
         
 
         self.form_bot = Frame(master=master, padx=5, pady=5)
@@ -122,8 +123,19 @@ class common_input_form(Frame):
         return self._material_name.combobox_values
     
     @materials.setter
-    def materials(self, value):
+    def materials(self, value: list[str]):
         self._material_name.combobox_values = value
+
+    @property
+    def samples(self) -> list[str]:
+        return self._sample_num.combobox_values
+    
+    @samples.setter
+    def samples(self, value: list[str]):
+        self._sample_num.combobox_values = value
+
+    def update_sample_list(self, *args):
+        self.samples = refer_samples_table(self.input_material_name)
 
 
 class Statusbar(Label):
@@ -135,3 +147,31 @@ class Statusbar(Label):
     def swrite(self, text: str) -> None:
         """テキストを表示します。"""
         self["text"] = text
+
+
+class TempletesWindow(Toplevel):
+    def __init__(self, master: Misc, main_window: Frame, columns: tuple[str]):
+        super().__init__(master)
+        self.title("Select Templete")
+        self.main_window = main_window
+
+        self.tree = Treeview(self, columns=columns, show="headings")
+        for item in columns:
+            self.tree.column(item, width=60, minwidth=60)
+            self.tree.heading(item, text=item)
+        self.tree.pack(padx=10, pady=10, fill="both", expand=True)
+
+        # データの挿入
+        rows = refer_pulse_templetes_table()
+        for row in rows:
+            self.tree.insert("", "end", values=row)
+
+        self.select_button = Button(self, text="テンプレートを反映", command=self.set_values)
+        self.select_button.pack(pady=10)
+
+    def set_values(self):
+        selected_item = self.tree.selection()
+        if selected_item:
+            values = self.tree.item(selected_item[0], "values")
+            self.main_window.recall_templete(values)  # メインウィンドウのメソッドを呼び出して値を更新
+        self.destroy()
