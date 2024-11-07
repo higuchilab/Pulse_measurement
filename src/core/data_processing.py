@@ -53,3 +53,12 @@ class PulseBlockParam:
     base_time: float
     loop: int
     interval_time: float
+
+
+@dataclass
+class SweepParam:
+    top_voltage: float
+    bottom_voltage: float
+    voltage_step: float
+    loop: int
+    tick_time: float

@@ -1,11 +1,11 @@
 import tkinter as tk
-from tkinter import Frame, Label, Button, DoubleVar, IntVar, Misc
+from tkinter import Frame, Label, Button, DoubleVar, IntVar, Misc, Variable
 from tkinter.ttk import Treeview
 from typing import Literal
 
 from ._components import TreeViewBlocks
 from ._sub_tab import WindowSub
-from ..common_item import EntryForm, TempletesWindow, make_check_buttons
+from ..common_item import make_check_buttons, ParameterInputsForm, TextVariables
 from ....core.measurement_model import MeasureBlocks
 from ....core.data_processing import PulseBlockParam
 from ....core.database import append_record_pulse_templetes
@@ -154,62 +154,36 @@ class TabPulseCenter(Frame):
             value_interval
             ):
         super().__init__(master=master)
-        self.__parameter_inputs = ParameterInputs(
-            master=self,
-            value_max_voltage=value_max_voltage,
-            value_pulse_width=value_pulse_width,
-            value_min_voltage=value_min_voltage,
-            value_off_width=value_off_width,
-            value_loop_num=value_loop_num,
-            value_interval=value_interval
-            )
+        param_names = [
+            "V_top [V]",
+            "top_time [s]",
+            "V_bot [V]",
+            "bot_time [s]",
+            "ループ回数",
+            "おしり [s]"
+            ]
+        variables = [
+            value_max_voltage,
+            value_pulse_width,
+            value_min_voltage,
+            value_off_width,
+            value_loop_num,
+            value_interval
+        ]
+        text_variables = TextVariables(param_names=param_names, variables=variables)
+        self.__parameter_inputs = PulseParameterInputs(self, text_variables)
         self.__parameter_inputs.pack(anchor=tk.W, expand=True)
 
 
-class ParameterInputs(Frame):
-    def __init__(
-            self,
-            master,
-            value_max_voltage: DoubleVar,
-            value_pulse_width: DoubleVar,
-            value_min_voltage: DoubleVar,
-            value_off_width: DoubleVar,
-            value_loop_num: IntVar,
-            value_interval: DoubleVar
-            ):
-        super().__init__(master=master)
-        self.label = Label(master=self, text="パラメーター")
-        self.label.pack(anchor=tk.W, side="top")
-        self.select_from_template_button = Button(master=self, text="テンプレートから選択", cursor='hand1', command=self.open_select_templete_window)
-        self.select_from_template_button.pack(anchor=tk.W, side="top", padx=10)
-
-        self.__value_max_voltage = value_max_voltage
-        self.__value_pulse_width = value_pulse_width
-        self.__value_min_voltage = value_min_voltage
-        self.__value_off_width = value_off_width
-        self.__value_loop_num = value_loop_num
-        self.__value_interval = value_interval
-
-        self.__input_max_voltage = EntryForm(label_name="V_top [V]", input_width=5, master=self, value=value_max_voltage)
-        self.__input_max_voltage.pack(anchor=tk.W, side="top", padx=10)
-
-        self.__input_pulse_width = EntryForm(label_name="top_time [s]", input_width=5, master=self, value=value_pulse_width)
-        self.__input_pulse_width.pack(anchor=tk.W, side="top", padx=10)
-
-        self.__input_min_voltage = EntryForm(label_name="V_bot [V]", input_width=5, master=self, value=value_min_voltage)
-        self.__input_min_voltage.pack(anchor=tk.W, side="top", padx=10)
-
-        self.__input_off_width = EntryForm(label_name="bot_time [s]", input_width=5, master=self, value=value_off_width)
-        self.__input_off_width.pack(anchor=tk.W, side="top", padx=10)
-
-        self.__input_loop_num = EntryForm(label_name="ループ回数", input_width=5, master=self, value=value_loop_num)
-        self.__input_loop_num.pack(anchor=tk.W, side="top", padx=10)
-
-        self.__input_interval = EntryForm(label_name="おしり [s]", input_width=5, master=self, value=value_interval)
-        self.__input_interval.pack(anchor=tk.W, side="top", padx=10)
-
-        self.__register_templete_button = Button(master=self, text="テンプレートに登録", cursor='hand1', command=self.register_templete)
-        self.__register_templete_button.pack(anchor=tk.W, side="top", padx=10)
+class PulseParameterInputs(ParameterInputsForm):
+    def __init__(self, master: Misc, text_variables: TextVariables):
+        super().__init__(master, text_variables)
+        self.__value_max_voltage = text_variables.variables[0]
+        self.__value_pulse_width = text_variables.variables[1]
+        self.__value_min_voltage = text_variables.variables[2]
+        self.__value_off_width = text_variables.variables[3]
+        self.__value_loop_num = text_variables.variables[4]
+        self.__value_interval = text_variables.variables[5]
 
     @property
     def top_voltage(self) -> float:
@@ -258,9 +232,6 @@ class ParameterInputs(Frame):
     @interval.setter
     def interval(self, value):
         return self.__value_interval.set(value)
-
-    def open_select_templete_window(self):
-        TempletesWindow(self, self, ("V_top [V]", "top_time [s]", "V_bot [V]", "bot_time [s]", "ループ回数", "おしり [s]"))
 
     def recall_templete(self, values):
         self.top_voltage = values[0]
