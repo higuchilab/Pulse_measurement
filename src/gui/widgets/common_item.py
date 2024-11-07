@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+from abc import ABCMeta, abstractmethod
 import tkinter as tk
 from tkinter import Label, Entry, Frame, Variable, Misc, Toplevel, Button
 from tkinter.ttk import Combobox, Treeview
@@ -149,8 +151,46 @@ class Statusbar(Label):
         self["text"] = text
 
 
+@dataclass
+class TextVariables:
+    param_names: list[str]
+    variables: list[Variable]
+
+
+class ParameterInputsForm(Frame, metaclass = ABCMeta):
+    def __init__(
+            self,
+            master,
+            text_variables: TextVariables
+        ):
+        super().__init__(master=master)
+        self.__param_names = text_variables.param_names
+        self.__top_label = Label(master=self, text="パラメーター")
+        self.__top_label.pack(anchor=tk.W, side="top")
+        self.__select_from_template_button = Button(master=self, text="テンプレートから選択", cursor='hand1', command=self.open_select_templete_window)
+        self.__select_from_template_button.pack(anchor=tk.W, side="top", padx=10)
+
+        for param_name, variable in zip(text_variables.param_names, text_variables.variables):
+            entry_form = EntryForm(label_name=param_name, input_width=5, master=self, value=variable)
+            entry_form.pack(anchor=tk.W, side="top", padx=10)
+
+        self.__register_templete_button = Button(master=self, text="テンプレートに登録", cursor='hand1', command=self.register_templete)
+        self.__register_templete_button.pack(anchor=tk.W, side="top", padx=10)
+
+    def open_select_templete_window(self):
+        TempletesWindow(self, self, self.__param_names)
+
+    @abstractmethod
+    def recall_templete(self, values):
+        pass
+
+    @abstractmethod
+    def register_templete(self):
+        pass
+
+
 class TempletesWindow(Toplevel):
-    def __init__(self, master: Misc, main_window: Frame, columns: tuple[str]):
+    def __init__(self, master: Misc, main_window: ParameterInputsForm, columns: list[str]):
         super().__init__(master)
         self.title("Select Templete")
         self.main_window = main_window

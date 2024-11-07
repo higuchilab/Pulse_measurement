@@ -1,7 +1,7 @@
 import sqlite3
 from typing import Any
 
-from ..data_processing import PulseBlockParam
+from ..data_processing import PulseBlockParam, SweepParam
 
 connection = sqlite3.connect("example.db")
 
@@ -173,7 +173,7 @@ def append_record_samples(material_name, sample_name):
     connect_database(sql_insert, (material_id, sample_name))
 
 
-def refer_samples_table(material_name):
+def refer_samples_table(material_name) -> list[str]:
     """
     sanplesテーブルから特定の物質のsample_nameをリストで取得
     """
@@ -195,7 +195,7 @@ def refer_samples_table(material_name):
 
 def create_pulse_templetes_table():
     """
-    samplesテーブルを作成
+    pulse_templetesテーブルを作成
     """
     sql = '''
         CREATE TABLE IF NOT EXISTS pulse_templetes (
@@ -205,7 +205,7 @@ def create_pulse_templetes_table():
             base_voltage REAL NOT NULL,
             base_time REAL NOT NULL CHECK(base_time >= 0),
             loop INTEGER NOT NULL CHECK(loop > 0),
-            interval_time REAL NOT NULL CHECK(base_time >= 0),
+            interval_time REAL NOT NULL CHECK(interval_time >= 0),
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             UNIQUE (top_voltage, top_time, base_voltage, base_time, loop, interval_time)
         )
@@ -229,12 +229,55 @@ def refer_pulse_templetes_table() -> list[tuple]:
 
     Returns
     -------
-    pulse_templete_list: list[str]
+    pulse_templete_list: list[tuple]
     """
-    sql = "SELECT top_voltage, top_time, base_voltage, base_time, loop, interval_time from pulse_templetes;"
+    sql = "SELECT top_voltage, top_time, base_voltage, base_time, loop, interval_time FROM pulse_templetes;"
     pulse_templete_list = fetch_all_data_record(sql)
 
     return pulse_templete_list
+
+
+def create_sweep_templetes_table():
+    """
+    sweep_templetesテーブルを作成
+    """
+    sql = '''
+        CREATE TABLE IF NOT EXISTS sweep_templetes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            top_voltage REAL NOT NULL,
+            bottom_voltage REAL NOT NULL,
+            voltage_step REAL NOT NULL CHECK(voltage_step > 0),
+            loop INTEGER NOT NULL CHECK(loop > 0),
+            tick_time REAL NOT NULL CHECK(tick_time >= 0),
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE (top_voltage, bottom_voltage, voltage_step, loop, tick_time)
+        )
+    '''
+    connect_database(sql)
+
+
+def append_record_sweep_templetes(param: SweepParam):
+    """
+    sweep_templetesテーブルにデータを挿入する
+    """
+    sql = '''
+        INSERT OR IGNORE INTO sweep_templetes (top_voltage, bottom_voltage, voltage_step, loop, tick_time) VALUES (?, ?, ?, ?, ?)
+    '''
+    connect_database(sql, (param.top_voltage, param.bottom_voltage, param.voltage_step, param.loop, param.tick_time))
+
+
+def refer_sweep_templetes_table() -> list[tuple]:
+    """
+    sweep_templetesテーブルのデータを参照する
+
+    Returns
+    -------
+    sweep_templete_list: list[tuple]
+    """
+    sql = "SELECT top_voltage, bottom_voltage, voltage_step, loop, tick_time FROM sweep_templetes;"
+    sweep_templete_list = fetch_all_data_record(sql)
+
+    return sweep_templete_list
 
 
 # cursor.execute('''

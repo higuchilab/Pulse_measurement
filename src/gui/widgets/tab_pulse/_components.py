@@ -1,10 +1,7 @@
 import tkinter as tk
-from tkinter import Frame, Label, Button, DoubleVar, IntVar, Misc
 from tkinter.ttk import Treeview
-from typing import Literal
 
-from ..common_item import EntryForm, make_check_buttons
-from ....core.measurement_model import MeasureBlock, Cycle, MeasureBlocks
+from ....core.measurement_model import MeasureBlock, MeasureBlocks
 
 
 class TreeViewBlocks(Treeview):
