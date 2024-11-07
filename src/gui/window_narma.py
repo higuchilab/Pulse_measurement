@@ -11,7 +11,7 @@ if project_root not in sys.path:
 
 from src.gui.widgets import common_input_form, TabNarma, TabPulse, TabSweep, Statusbar
 
-from src.core.database import create_users_table, append_record_users, refer_users_table, create_materials_table, append_record_materials, refer_materials_table, create_samples_table, append_record_samples, refer_samples_table
+from src.core.database import create_users_table, append_record_users, refer_users_table, create_materials_table, append_record_materials, refer_materials_table, create_samples_table, append_record_samples, refer_samples_table, create_pulse_templetes_table
 
 from src.core.measurement import narma_run, NarmaParameters, CommonParameters, PulseParameters, timer, pulse_run
 
@@ -99,8 +99,6 @@ class Application(tk.Frame):
                 'base_voltage': self.tab_narma.base_voltage
             }
 
-            #Parameterテンプレートに登録
-
             # self.exe_thread = Thread(target=narma_run, args=(parameters, common_param))
             # self.exe_thread.start()
 
@@ -125,6 +123,7 @@ if __name__ == "__main__":
     create_users_table()
     create_materials_table()
     create_samples_table()
+    create_pulse_templetes_table()
     root = tk.Tk()
     # root.geometry("530x300")
     # root.resizable(False, False)#ウィンドウサイズをフリーズ

@@ -1,6 +1,8 @@
 import sqlite3
 from typing import Any
 
+from ..data_processing import PulseBlockParam
+
 connection = sqlite3.connect("example.db")
 
 cursor = connection.cursor()
@@ -22,9 +24,9 @@ def fetch_unique_data(sql: str, param: tuple=()) -> Any:
         return result[0]
 
 
-def fetch_all_data(sql: str, param: tuple=()) -> list:
+def fetch_all_data_record(sql: str, param: tuple=()) -> list[tuple]:
     """
-    テーブルのデータを取得
+    テーブルのデータをレコードごとに取得
 
     Returns
     -------
@@ -35,7 +37,36 @@ def fetch_all_data(sql: str, param: tuple=()) -> list:
         cursor.execute(sql, param)
         rows = cursor.fetchall()
 
-        result_list = [row[0] for row in rows]
+    return rows
+
+
+def fetch_all_data(sql: str, param: tuple=()) -> list:
+    """
+    テーブルのデータを1列だけ取得
+
+    Returns
+    -------
+    result_list: list
+    """
+    rows = fetch_all_data_record(sql, param)
+    result_list = [row[0] for row in rows]
+    return result_list
+
+
+def fetch_all_data_column(sql: str, param: tuple=()) -> list[list]:
+    """
+    テーブルのデータをカラムごとに取得
+
+    Returns
+    -------
+    result_list: list
+    """
+    with sqlite3.connect("example.db") as conn:
+        cursor = conn.cursor()
+        cursor.execute(sql, param)
+        rows = cursor.fetchall()
+
+        result_list = [[row[i] for row in rows] for i in range(len(rows[0]))]
 
     return result_list
 
@@ -160,6 +191,50 @@ def refer_samples_table(material_name):
         return []
     
     return sample_list
+
+
+def create_pulse_templetes_table():
+    """
+    samplesテーブルを作成
+    """
+    sql = '''
+        CREATE TABLE IF NOT EXISTS pulse_templetes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            top_voltage REAL NOT NULL,
+            top_time REAL NOT NULL CHECK(top_time >= 0),
+            base_voltage REAL NOT NULL,
+            base_time REAL NOT NULL CHECK(base_time >= 0),
+            loop INTEGER NOT NULL CHECK(loop > 0),
+            interval_time REAL NOT NULL CHECK(base_time >= 0),
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE (top_voltage, top_time, base_voltage, base_time, loop, interval_time)
+        )
+    '''
+    connect_database(sql)
+
+
+def append_record_pulse_templetes(param: PulseBlockParam):
+    """
+    pulse_templetesテーブルにデータを挿入する
+    """
+    sql = '''
+        INSERT OR IGNORE INTO pulse_templetes (top_voltage, top_time, base_voltage, base_time, loop, interval_time) VALUES (?, ?, ?, ?, ?, ?)
+    '''
+    connect_database(sql, (param.top_voltage, param.top_time, param.base_voltage, param.base_time, param.loop, param.interval_time))
+
+
+def refer_pulse_templetes_table() -> list[tuple]:
+    """
+    pulse_templetesテーブルのデータを参照する
+
+    Returns
+    -------
+    pulse_templete_list: list[str]
+    """
+    sql = "SELECT top_voltage, top_time, base_voltage, base_time, loop, interval_time from pulse_templetes;"
+    pulse_templete_list = fetch_all_data_record(sql)
+
+    return pulse_templete_list
 
 
 # cursor.execute('''

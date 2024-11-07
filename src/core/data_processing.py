@@ -1,7 +1,4 @@
-import sqlite3
-
 from dataclasses import dataclass
-from typing import List
 from numpy.typing import NDArray
 
 from openpyxl import Workbook, load_workbook
@@ -41,8 +38,6 @@ class Datas():
         wb.close()
 
 
-
-
 @dataclass(frozen=True)
 class PulseMeasureOutputSingle:
     voltage: NDArray
@@ -50,3 +45,11 @@ class PulseMeasureOutputSingle:
     time: NDArray
 
 
+@dataclass
+class PulseBlockParam:
+    top_voltage: float
+    top_time: float
+    base_voltage: float
+    base_time: float
+    loop: int
+    interval_time: float
