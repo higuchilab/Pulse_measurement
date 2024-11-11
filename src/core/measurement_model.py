@@ -1,6 +1,7 @@
 import numpy as np
 from numpy.typing import NDArray
 from operator import attrgetter
+from abc import ABCMeta, abstractmethod
 from typing import List
 
 class MeasureBlock():
@@ -117,7 +118,7 @@ class MeasureBlocks():
     def __init__(self):
         self.__blocks = []
         self.__cycles = []
-        self.append_new_block()
+        # self.append_new_block()
 
     @property
     def blocks(self) -> List[MeasureBlock]:
@@ -172,6 +173,26 @@ class MeasureBlocks():
         flattened_standarded_blocks = flatten(standarded_blocks)
 
         return flattened_standarded_blocks
+    
+
+class MeasureModelTemplete(metaclass = ABCMeta):
+    def __init__(self):
+        self.__tick = 0.1
+
+    @property
+    def tick(self) -> float:
+        return self.__tick
+    
+    @tick.setter
+    def tick(self, value):
+        if not isinstance(value, float):
+            raise ValueError("tick must be a float")
+        self.__tick = value
+
+    # @property
+    @abstractmethod
+    def input_V_list(self) -> list:
+        pass
 
 
 class MeasureModel():

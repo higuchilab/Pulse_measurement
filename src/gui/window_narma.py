@@ -11,9 +11,9 @@ if project_root not in sys.path:
 
 from src.gui.widgets import common_input_form, TabNarma, TabPulse, TabSweep, Statusbar
 
-from src.core.database import create_users_table, append_record_users, refer_users_table, create_materials_table, append_record_materials, refer_materials_table, create_samples_table, append_record_samples, refer_samples_table, create_pulse_templetes_table
+from src.core.database import create_users_table, append_record_users, refer_users_table, create_materials_table, append_record_materials, refer_materials_table, create_samples_table, append_record_samples, refer_samples_table, create_pulse_templetes_table, create_sweep_templetes_table
 
-from src.core import narma_run, NarmaParameters, CommonParameters, PulseParameters, SweepParam, timer, pulse_run
+from src.core import narma_run, CommonParameters, PulseParameters, SweepParam, NarmaParam, timer, pulse_run
 
 
 class Application(tk.Frame):
@@ -86,18 +86,18 @@ class Application(tk.Frame):
 
         selected_tab = self.notebook.index(self.notebook.select())
         if selected_tab == 0:
-            parameters: NarmaParameters = {
-                'use_database': self.tab_narma.is_use_prepared_array,
-                'model': self.tab_narma.narma_model,
-                'pulse_width': self.tab_narma.pulse_width,
-                'off_width': self.tab_narma.off_width,
-                'tick': self.tab_narma.tick,
-                'nodes': self.tab_narma.nodes,
-                'discrete_time': self.tab_narma.discrete_time,
-                'bot_voltage': self.tab_narma.bot_voltage,
-                'top_voltage': self.tab_narma.top_voltage,
-                'base_voltage': self.tab_narma.base_voltage
-            }
+            parameters = NarmaParam(
+                use_database=self.tab_narma.is_use_prepared_array,
+                model=self.tab_narma.narma_model,
+                pulse_width=self.tab_narma.pulse_width,
+                off_width=self.tab_narma.off_width,
+                tick=self.tab_narma.tick,
+                nodes=self.tab_narma.nodes,
+                discrete_time=self.tab_narma.discrete_time,
+                bot_voltage=self.tab_narma.bot_voltage,
+                top_voltage=self.tab_narma.top_voltage,
+                base_voltage=self.tab_narma.base_voltage
+            )
 
             # self.exe_thread = Thread(target=narma_run, args=(parameters, common_param))
             # self.exe_thread.start()
@@ -118,7 +118,14 @@ class Application(tk.Frame):
             self.exe_pulse_thread.start()
 
         if selected_tab == 2:
-            parameters = SweepParam()
+            parameters = SweepParam(
+                mode=self.tab_sweep.sweep_mode,
+                top_voltage=self.tab_sweep.top_voltage,
+                bottom_voltage=self.tab_sweep.bottom_voltage,
+                voltage_step=self.tab_sweep.voltage_step,
+                loop=self.tab_sweep.loop,
+                tick_time=self.tab_sweep.tick
+            )
 
             # self.exe_sweep_thread = Thread(target=sweep_run, args=(parameters, common_param))
             # self.exe_sweep_thread.start()
@@ -130,6 +137,7 @@ if __name__ == "__main__":
     create_materials_table()
     create_samples_table()
     create_pulse_templetes_table()
+    create_sweep_templetes_table()
     root = tk.Tk()
     # root.geometry("530x300")
     # root.resizable(False, False)#ウィンドウサイズをフリーズ

@@ -1,20 +1,22 @@
 from dataclasses import dataclass
 from abc import ABCMeta, abstractmethod
 import tkinter as tk
-from tkinter import Label, Entry, Frame, Variable, Misc, Toplevel, Button
+from tkinter import Label, Entry, Frame, Variable, Misc, Toplevel, Button, StringVar, Radiobutton
 from tkinter.ttk import Combobox, Treeview
-from typing import List, Dict
+from typing import Dict
 
-from ...core.database import refer_users_table, refer_materials_table, refer_samples_table, refer_pulse_templetes_table
+from ...core.database import refer_users_table, refer_materials_table, refer_samples_table
 
 class ComboboxForm(Frame):
-    def __init__(self,
-                 label_name: str,
-                 input_width: int,
-                 values: list[str],
-                 master: Misc,
-                 textvariable: Variable,
-                 *arg):
+    def __init__(
+            self,
+            label_name: str,
+            input_width: int,
+            values: list[str],
+            master: Misc,
+            textvariable: Variable,
+            *arg
+        ):
         super().__init__(master, *arg)
         self.label = Label(master=self, text=label_name)
         self.label.pack(side="left", fill="y")
@@ -40,6 +42,24 @@ class EntryForm(Frame):
         self.label.pack(side="left", fill="y")
         self.combobox = Entry(master=self, width=input_width, textvariable=value)
         self.combobox.pack(side="left", fill="y")
+
+
+class RadioButtonForm(Frame):
+    """
+    ラジオボタンフォームのテンプレート
+    """
+    def __init__(self, master: Misc, form_name: str, values: list[tuple[str, str]], init: str):
+        super().__init__(master=master)
+        self.__select_item = StringVar(value=init)
+        self.__label = Label(master=self, text=form_name)
+        self.__label.pack(anchor=tk.W, side="top")
+        for text, value in values:
+            radio_button = Radiobutton(master=self, text=text, variable=self.__select_item, value=value)
+            radio_button.pack(anchor=tk.W, side="top", padx=10)
+
+    @property
+    def select_item(self) -> str:
+        return self.__select_item.get()
 
 
 def make_check_buttons(master: Misc):
@@ -177,8 +197,13 @@ class ParameterInputsForm(Frame, metaclass = ABCMeta):
         self.__register_templete_button = Button(master=self, text="テンプレートに登録", cursor='hand1', command=self.register_templete)
         self.__register_templete_button.pack(anchor=tk.W, side="top", padx=10)
 
+    @property
+    def param_names(self) -> list[str]:
+        return self.__param_names
+
+    @abstractmethod
     def open_select_templete_window(self):
-        TempletesWindow(self, self, self.__param_names)
+        pass
 
     @abstractmethod
     def recall_templete(self, values):
@@ -189,7 +214,7 @@ class ParameterInputsForm(Frame, metaclass = ABCMeta):
         pass
 
 
-class TempletesWindow(Toplevel):
+class TempletesWindow(Toplevel, metaclass = ABCMeta):
     def __init__(self, master: Misc, main_window: ParameterInputsForm, columns: list[str]):
         super().__init__(master)
         self.title("Select Templete")
@@ -200,11 +225,6 @@ class TempletesWindow(Toplevel):
             self.tree.column(item, width=60, minwidth=60)
             self.tree.heading(item, text=item)
         self.tree.pack(padx=10, pady=10, fill="both", expand=True)
-
-        # データの挿入
-        rows = refer_pulse_templetes_table()
-        for row in rows:
-            self.tree.insert("", "end", values=row)
 
         self.select_button = Button(self, text="テンプレートを反映", command=self.set_values)
         self.select_button.pack(pady=10)

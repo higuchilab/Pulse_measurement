@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import StringVar, BooleanVar, IntVar, DoubleVar, Radiobutton, Frame, Label, Button, Entry
 from tkinter.ttk import Treeview
 
-from .common_item import EntryForm
+from .common_item import EntryForm, RadioButtonForm
 
 class TabNarma(Frame):
     """
@@ -94,7 +94,7 @@ class TabNarmaLeft(Frame):
 
     @property
     def narma_model(self) -> str:
-        return self.select_narma_model.narma_model
+        return self.select_narma_model.select_item
     
     @property
     def pulse_width(self) -> float:
@@ -117,23 +117,18 @@ class TabNarmaLeft(Frame):
         return self.parameter_inputs.base_voltage
 
 
-class SelectNarmaModel(Frame):
+class SelectNarmaModel(RadioButtonForm):
     """
     NARMAモデルの選択
     """
     def __init__(self, master):
-        super().__init__(master=master)
-        self._narma_model = StringVar(value="narma2")
-        self.label = Label(master=self, text="モデル")
-        self.label.pack(anchor=tk.W, side="top")
-        self.radio_button_narma2 = Radiobutton(master=self, text="NARMA2", variable=self._narma_model, value="narma2")
-        self.radio_button_narma2.pack(anchor=tk.W, side="top", padx=10)
-        self.radio_button_narma10 = Radiobutton(master=self, text="NARMA10", variable=self._narma_model, value="narma10")
-        self.radio_button_narma10.pack(anchor=tk.W, side="top", padx=10)
-
-    @property
-    def narma_model(self) -> str:
-        return self._narma_model.get()
+        form_name = "モデル"
+        values = [
+            ("NARMA2", "narma2"),
+            ("NARMA10", "narma10")
+        ]
+        init = "narma2"
+        super().__init__(master, form_name, values, init)
 
 
 class ParameterInputs(Frame):

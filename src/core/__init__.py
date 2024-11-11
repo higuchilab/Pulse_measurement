@@ -1,14 +1,14 @@
-from .data_processing import PulseMeasureOutputSingle, PulseBlockParam, SweepParam
+from .data_processing import PulseMeasureOutputSingle, PulseBlockParam, SweepParam, NarmaParam
 from .measurement_model import MeasureBlock, Cycle, MeasureBlocks, MeasureModel
-from .measurement import CommonParameters, PulseParameters, NarmaParameters, pulse_run, timer, narma_run
+from .measurement import CommonParameters, PulseParameters, pulse_run, timer, narma_run
 
 __all__ = [
   "CommonParameters",
   "PulseParameters",
-  "NarmaParameters",
   "PulseMeasureOutputSingle",
   "PulseBlockParam",
   "SweepParam",
+  "NarmaParam",
   "MeasureBlock",
   "Cycle",
   "MeasureBlocks",
