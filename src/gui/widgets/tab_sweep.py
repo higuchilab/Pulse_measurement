@@ -188,14 +188,15 @@ class SweepParameterInputs(ParameterInputsForm):
         self.tick_time = values[4]
 
     def register_templete(self):
-        pulse_block_param = SweepParam(
+        sweep_param = SweepParam(
+            mode="one_way",
             top_voltage=self.top_voltage,
             bottom_voltage=self.bottom_voltage,
             voltage_step=self.voltage_step,
             loop=self.loop,
             tick_time=self.tick_time
             )
-        append_record_sweep_templetes(pulse_block_param)
+        append_record_sweep_templetes(sweep_param)
         print("テンプレートに追加しました")
 
 

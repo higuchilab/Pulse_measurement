@@ -299,11 +299,14 @@ def output_to_excel_file(file_path: str, output: PulseMeasureOutputSingle):
     ws =wb['Sheet']
     ws = wb.active
 
-    ws.cell(0, 1, "Time")
-    ws.cell(0, 2, "Voltage")
-    ws.cell(0, 3, "Current")
+    # ws.cell(0, 1, "Time")
+    # ws.cell(0, 2, "Voltage")
+    # ws.cell(0, 3, "Current")
+    ws['A1'] = "Time"
+    ws['B1'] = "Voltage"
+    ws['C1'] = "Current"
 
-    for i, (t, voltage, current) in enumerate(zip(output.time, output.voltage, output.current), 1):
+    for i, (t, voltage, current) in enumerate(zip(output.time, output.voltage, output.current), 2):
         ws.cell(i, 1, t)
         ws.cell(i, 2, voltage)
         ws.cell(i, 3, current)
