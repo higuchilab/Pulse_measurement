@@ -13,7 +13,7 @@ from src.gui.widgets import common_input_form, TabNarma, TabPulse, TabSweep, Sta
 
 from src.core.database import create_users_table, append_record_users, refer_users_table, create_materials_table, append_record_materials, refer_materials_table, create_samples_table, append_record_samples, refer_samples_table, create_pulse_templetes_table, create_sweep_templetes_table
 
-from src.core import narma_run, CommonParameters, PulseParameters, SweepParam, NarmaParam, timer, pulse_run
+from src.core import narma_run, CommonParameters, PulseParameters, SweepParam, NarmaParam, timer, pulse_run, sweep_run
 
 
 class Application(tk.Frame):
@@ -127,8 +127,8 @@ class Application(tk.Frame):
                 tick_time=self.tab_sweep.tick
             )
 
-            # self.exe_sweep_thread = Thread(target=sweep_run, args=(parameters, common_param))
-            # self.exe_sweep_thread.start()
+            self.exe_sweep_thread = Thread(target=sweep_run, args=(parameters, common_param))
+            self.exe_sweep_thread.start()
 
 
 

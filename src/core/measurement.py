@@ -9,7 +9,7 @@ from openpyxl import Workbook, load_workbook
 from ..visualization.graph import graph
 from ..visualization.live_plot import livegraph
 from .data_processing import Datas, PulseMeasureOutputSingle, NarmaParam, SweepParam
-from .measurement_model import MeasureBlock, MeasureBlocks, MeasureModel
+from .measurement_model import MeasureBlock, MeasureBlocks, PulseModel, MeasureModelTemplete, SweepModel
 from ..utils import plot_data
 from .device_control import write_command, prepare_device, device_connection
 
@@ -59,7 +59,7 @@ def pulse_run(
         raise ConnectionError(f"Fail to connect device '{GPIB_ADDRESS}'")
     
     prepare_device(dev)
-    measure_model = MeasureModel(parameters["measure_blocks"])
+    measure_model = PulseModel(parameters["measure_blocks"])
     # print(measure_model.input_V_list)
     output = measure(measure_model=measure_model, dev=dev)
     print("測定終了")
@@ -96,7 +96,7 @@ def narma_run(
         raise ConnectionError(f"Fail to connect device '{GPIB_ADDRESS}'")
     prepare_device(dev)
     #測定モデル作成
-    measure_model_train = MeasureModel
+    measure_model_train = PulseModel
     measure_model_train.make_model_from_narma_input_array(
         pulse_width=parameters.pulse_width,
         off_width=parameters.off_width,
@@ -104,7 +104,7 @@ def narma_run(
         base_voltage=parameters.base_voltage,
         input_array=x_train)
 
-    measure_model_test = MeasureModel
+    measure_model_test = PulseModel
     measure_model_test.make_model_from_narma_input_array(
         pulse_width=parameters.pulse_width,
         off_width=parameters.off_width,
@@ -133,6 +133,15 @@ def sweep_run(
         raise ConnectionError(f"Fail to connect device '{GPIB_ADDRESS}'")
     
     prepare_device(dev)
+    measure_model = SweepModel(param)
+    output = measure(measure_model=measure_model, dev=dev)
+    print("測定終了")
+    plot_data(output)
+
+    if common_param["file_path"] == "":
+        return
+    
+    output_to_excel_file(common_param["file_path"], output=output)
     
 
 def run_func(read_widgets: List[Any], blocks: Any, datas: Datas, statusbar: Any) -> None:
@@ -256,7 +265,7 @@ def finish_measurement(paras: Dict[str, Any], statusbar: Any) -> None:
     write_command("SBY")
 
 
-def measure(measure_model: MeasureModel, dev: any) -> PulseMeasureOutputSingle:
+def measure(measure_model: MeasureModelTemplete, dev: any) -> PulseMeasureOutputSingle:
     V_list = []
     A_list = []
     time_list = []
@@ -289,6 +298,10 @@ def output_to_excel_file(file_path: str, output: PulseMeasureOutputSingle):
     wb = load_workbook(file_path)
     ws =wb['Sheet']
     ws = wb.active
+
+    ws.cell(0, 1, "Time")
+    ws.cell(0, 2, "Voltage")
+    ws.cell(0, 3, "Current")
 
     for i, (t, voltage, current) in enumerate(zip(output.time, output.voltage, output.current), 1):
         ws.cell(i, 1, t)

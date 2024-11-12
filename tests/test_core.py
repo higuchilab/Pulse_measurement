@@ -1,5 +1,5 @@
 # テストコード
-from src.core.measurement_model import MeasureModel, MeasureBlock, Cycle, MeasureBlocks
+from src.core.measurement_model import MeasureModelTemplete, MeasureBlock, Cycle, MeasureBlocks, PulseModel
 
 #MeasureBlocks
 def test_MeasureBlock_construct():

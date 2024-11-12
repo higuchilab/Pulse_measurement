@@ -4,6 +4,8 @@ from operator import attrgetter
 from abc import ABCMeta, abstractmethod
 from typing import List
 
+from .data_processing import SweepParam
+
 class MeasureBlock():
     def __init__(self, loop: int, V_top: float, V_base: float, top_time: float, base_time: float, interval: float):     
         self.__loop = loop
@@ -176,8 +178,8 @@ class MeasureBlocks():
     
 
 class MeasureModelTemplete(metaclass = ABCMeta):
-    def __init__(self):
-        self.__tick = 0.1
+    def __init__(self, tick):
+        self.__tick = tick
 
     @property
     def tick(self) -> float:
@@ -195,10 +197,10 @@ class MeasureModelTemplete(metaclass = ABCMeta):
         pass
 
 
-class MeasureModel():
+class PulseModel(MeasureModelTemplete):
     def __init__(self, blocks: MeasureBlock):
+        super().__init__(tick=0.1)
         self.__blocks = blocks
-        self.__tick = 0.1
 
     @property
     def blocks(self) -> MeasureBlocks:
@@ -209,19 +211,9 @@ class MeasureModel():
         self.__blocks = value
 
     @property
-    def tick(self):
-        return self.__tick
-
-    @tick.setter
-    def tick(self, value):
-        if not isinstance(value, float):
-            raise ValueError("tick must be a float")
-        self.__tick = value
-
-    @property
-    def input_V_list(self) -> list:
+    def input_V_list(self) -> list[float]:
         return self.__make_measure_list()
-
+    
     def __make_measure_list(self) -> NDArray:
         def block_measure_list(block: MeasureBlock) -> List[float]:
             v_list = []
@@ -256,3 +248,36 @@ class MeasureModel():
                 top_time=pulse_width,
                 base_time=off_width,
                 interval=0.0)
+
+
+class SweepModel(MeasureModelTemplete):
+    def __init__(self, sweep_param: SweepParam):
+        super().__init__(tick=sweep_param.tick_time)
+        self.param = sweep_param
+
+    @property
+    def input_V_list(self) -> list:
+        if self.param.mode == "one_way":
+            return self.__one_way()
+        if self.param.mode == "round_trip":
+            return self.__round_trip()
+        if self.param.mode == "bidirection":
+            return self.__bidirection()
+
+        raise ValueError("param.mode must be 'one_way', 'round_trip', 'bidirection'.")
+
+    def __one_way(self) -> list:
+        ndarray = np.arange(self.param.bottom_voltage, self.param.top_voltage + self.param.voltage_step, self.param.voltage_step)
+        return ndarray.tolist()
+
+    def __round_trip(self):
+        ndarray_forth = np.arange(self.param.bottom_voltage, self.param.top_voltage, self.param.voltage_step)
+        ndarray_back = np.arange(self.param.top_voltage, self.param.bottom_voltage - self.param.voltage_step, -self.param.voltage_step)
+        return ndarray_forth.tolist() + ndarray_back.tolist()
+
+    def __bidirection(self):
+        ndarray_go = np.arange(0, self.param.top_voltage, self.param.voltage_step)
+        ndarray_back = np.arange(self.param.top_voltage, self.param.bottom_voltage, -self.param.voltage_step)
+        ndarray_return = np.arange(self.param.bottom_voltage, self.param.voltage_step, self.param.voltage_step)
+        return ndarray_go.tolist() + ndarray_back.tolist() + ndarray_return.tolist()
+
