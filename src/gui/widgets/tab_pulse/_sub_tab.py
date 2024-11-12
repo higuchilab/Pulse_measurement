@@ -5,7 +5,7 @@ from typing import Literal
 
 from ._components import TreeViewBlocks
 from ..common_item import EntryForm
-from ....core.measurement_model import Cycle, MeasureBlocks
+from ....core import Cycle, MeasureBlocks
 
 
 class WindowSub(tk.Toplevel):

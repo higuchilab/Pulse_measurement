@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Literal
 from numpy.typing import NDArray
 
 from openpyxl import Workbook, load_workbook
@@ -57,8 +58,23 @@ class PulseBlockParam:
 
 @dataclass
 class SweepParam:
+    mode: Literal["one_way", "round_trip", "bidirection"]
     top_voltage: float
     bottom_voltage: float
     voltage_step: float
     loop: int
     tick_time: float
+
+
+@dataclass
+class NarmaParam:
+    use_database: bool
+    model: str
+    pulse_width: float
+    off_width: float
+    tick: float
+    nodes: int
+    discrete_time: int
+    bot_voltage: float
+    top_voltage: float
+    base_voltage: float
