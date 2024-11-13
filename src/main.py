@@ -4,7 +4,7 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import tkinter as tk
-from src.gui.window import Application
+from src.gui.window_narma import Application
 
 def main():
     root = tk.Tk()
