@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import time
+from ._graph import graph
 
 def livegraph(plot, scatter):
     global livegraph_flag, time_list, A_list, V_list

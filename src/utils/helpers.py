@@ -5,7 +5,7 @@ import tkinter as tk
 from tkinter import filedialog
 
 from src.core.data_processing import Datas, PulseMeasureOutputSingle
-from src.visualization.graph import graph
+from src.visualization import graph
 
 
 def set_folder_func(textboxes: Any) -> callable:

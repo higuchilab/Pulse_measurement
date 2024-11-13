@@ -6,7 +6,7 @@ from abc import ABCMeta, abstractmethod
 
 from src.core.measurement import exc_run_func, stop_func
 from src.core.measurement_model import Measure_block, Measure_model, Cycle
-from src.utils.helpers import set_folder_func
+from src.utils import set_folder_func
 
 
 class Labels:
