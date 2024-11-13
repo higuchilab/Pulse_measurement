@@ -199,7 +199,7 @@ class MeasureModelTemplete(metaclass = ABCMeta):
 
 class PulseModel(MeasureModelTemplete):
     def __init__(self, blocks: MeasureBlock):
-        super().__init__(tick=0.1)
+        super().__init__(tick=0.5)
         self.__blocks = blocks
 
     @property

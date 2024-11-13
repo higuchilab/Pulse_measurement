@@ -287,16 +287,15 @@ def measure(measure_model: MeasureModelTemplete, dev: any) -> PulseMeasureOutput
     #     time.sleep(measure_model.tick)
 
     start_perfcounter = time.perf_counter()
-    measured_perfcounter = time.perf_counter()
+    target_time = 0.0
     for voltage in measure_model.input_V_list:
         while True:
-            elapsed_time = time.perf_counter() - measured_perfcounter
+            elapsed_time = time.perf_counter() - start_perfcounter
 
-            if elapsed_time >= measure_model.tick:
+            if elapsed_time >= target_time:
                 dev.write(f"SOV{voltage}")
                 dev.write("*TRG")
-                measured_perfcounter = time.perf_counter()
-                time_list.append(measured_perfcounter - start_perfcounter)
+                time_list.append(time.perf_counter() - start_perfcounter)
                 
                 A=dev.query("N?")
                 A_=float(A[3:-2])
@@ -305,6 +304,7 @@ def measure(measure_model: MeasureModelTemplete, dev: any) -> PulseMeasureOutput
                 V=dev.query("SOV?")
                 V_=float(V[3:-2])
                 V_list.append(V_)
+                target_time += measure_model.tick
                 break
         
         graph(time_list, V_list, A_list)
