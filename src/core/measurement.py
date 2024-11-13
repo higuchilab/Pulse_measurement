@@ -6,8 +6,7 @@ from typing import TypedDict
 
 from typing import List, Dict, Any
 from openpyxl import Workbook, load_workbook
-from ..visualization.graph import graph
-from ..visualization.live_plot import livegraph
+from ..visualization import graph, livegraph
 from .data_processing import Datas, PulseMeasureOutputSingle, NarmaParam, SweepParam
 from .measurement_model import MeasureBlock, MeasureBlocks, PulseModel, MeasureModelTemplete, SweepModel
 from ..utils import plot_data
@@ -269,23 +268,46 @@ def measure(measure_model: MeasureModelTemplete, dev: any) -> PulseMeasureOutput
     V_list = []
     A_list = []
     time_list = []
-    start_time = time.perf_counter()
+    # start_time = time.perf_counter()
 
+    # for voltage in measure_model.input_V_list:
+        
+    #     dev.write(f"SOV{voltage}")
+    #     dev.write("*TRG")
+    #     time_list.append(time.perf_counter() - start_time)
+        
+    #     A=dev.query("N?")
+    #     A_=float(A[3:-2])
+    #     A_list.append(A_)
+        
+    #     V=dev.query("SOV?")
+    #     V_=float(V[3:-2])
+    #     V_list.append(V_)
+
+    #     time.sleep(measure_model.tick)
+
+    start_perfcounter = time.perf_counter()
+    measured_perfcounter = time.perf_counter()
     for voltage in measure_model.input_V_list:
-        
-        dev.write(f"SOV{voltage}")
-        dev.write("*TRG")
-        time_list.append(time.perf_counter() - start_time)
-        
-        A=dev.query("N?")
-        A_=float(A[3:-2])
-        A_list.append(A_)
-        
-        V=dev.query("SOV?")
-        V_=float(V[3:-2])
-        V_list.append(V_)
+        while True:
+            elapsed_time = time.perf_counter() - measured_perfcounter
 
-        time.sleep(measure_model.tick)
+            if elapsed_time >= measure_model.tick:
+                dev.write(f"SOV{voltage}")
+                dev.write("*TRG")
+                measured_perfcounter = time.perf_counter()
+                time_list.append(measured_perfcounter - start_perfcounter)
+                
+                A=dev.query("N?")
+                A_=float(A[3:-2])
+                A_list.append(A_)
+                
+                V=dev.query("SOV?")
+                V_=float(V[3:-2])
+                V_list.append(V_)
+                break
+        
+        graph(time_list, V_list, A_list)
 
     output_data = PulseMeasureOutputSingle(voltage=V_list, current=A_list, time=time_list)
 
