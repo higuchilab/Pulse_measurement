@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import StringVar, BooleanVar, IntVar, DoubleVar, Radiobutton, Frame, Label, Button, Entry
 from tkinter.ttk import Treeview
 
-from .common_item import EntryForm, RadioButtonForm
+from ._common_item import EntryForm, RadioButtonForm
 
 class TabNarma(Frame):
     """

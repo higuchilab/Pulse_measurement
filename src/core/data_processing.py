@@ -78,3 +78,19 @@ class NarmaParam:
     bot_voltage: float
     top_voltage: float
     base_voltage: float
+
+
+@dataclass
+class HistoryParam:
+    user_name: str
+    sample_name: str
+    measure_type: str
+    option: str
+
+
+@dataclass
+class ReferHistoryParam:
+    operator: str = ""
+    material: str = ""
+    sample: str = ""
+    measure_type: str = ""

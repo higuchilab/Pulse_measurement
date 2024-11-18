@@ -4,8 +4,8 @@ from tkinter.ttk import Treeview
 from typing import Literal
 
 from ._components import TreeViewBlocks
-from ..common_item import EntryForm
-from ....core import Cycle, MeasureBlocks
+from .._common_item import EntryForm
+from .....core import Cycle, MeasureBlocks
 
 
 class WindowSub(tk.Toplevel):
