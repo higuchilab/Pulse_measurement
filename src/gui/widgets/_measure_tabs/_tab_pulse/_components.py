@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter.ttk import Treeview
 
-from ....core import MeasureBlock, MeasureBlocks
+from .....core import MeasureBlock, MeasureBlocks
 
 
 class TreeViewBlocks(Treeview):

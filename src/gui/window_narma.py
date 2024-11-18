@@ -9,9 +9,9 @@ project_root = str(Path(__file__).parent.parent.parent)
 if project_root not in sys.path:
     sys.path.append(project_root)
 
-from src.gui.widgets import common_input_form, TabNarma, TabPulse, TabSweep, Statusbar
+from src.gui.widgets import common_input_form, TabNarma, TabPulse, TabSweep, Statusbar, Sidebar, HistoryWindow
 
-from src.core.database import create_users_table, append_record_users, refer_users_table, create_materials_table, append_record_materials, refer_materials_table, create_samples_table, append_record_samples, refer_samples_table, create_pulse_templetes_table, create_sweep_templetes_table
+from src.core.database import create_users_table, append_record_users, refer_users_table, create_materials_table, append_record_materials, refer_materials_table, create_samples_table, append_record_samples, refer_samples_table, create_pulse_templetes_table, create_sweep_templetes_table, create_measures_types_table, create_history_table, append_record_measure_types, fetch_measure_type_index
 
 from src.core import narma_run, CommonParameters, PulseParameters, SweepParam, NarmaParam, timer, pulse_run, sweep_run
 
@@ -23,33 +23,43 @@ class Application(tk.Frame):
         self.master.title("Pulse ver2.1")
         self.pack(fill="both", expand=True)
 
+        self.main_window = MainWindow(master=self)
+        self.history_window = HistoryWindow(master=self)
+
+        self.sidebar = Sidebar(master=self, contents=[self.main_window, self.history_window])
+
+    #     self.__statusbar = Statusbar(master=self)
+    
+    # @property
+    # def status_bar(self):
+    #     return self.__statusbar
+
+
+class MainWindow(tk.Frame):
+    def __init__(self, master):
+        super().__init__(master=master)
+        self.pack(fill="both", expand=True, side="right")
         self.form_top = common_input_form(self)
+
+        tab_classes = [TabNarma, TabPulse, TabSweep]
+        tab_name = ["NARMA", "Pulse", "I-Vsweep"]
 
         self.notebook = Notebook(master=self)
 
-        self.tab_narma = TabNarma(master=self.notebook)
-        self.notebook.add(self.tab_narma, text=' narma ')
-
-        self.tab_pulse = TabPulse(master=self.notebook)
-        self.notebook.add(self.tab_pulse, text=' pulse ')
-
-        self.tab_sweep = TabSweep(master=self.notebook)
-        self.notebook.add(self.tab_sweep, text=' I-Vsweep ')
+        self.tab_instances = []
+        for cls, name in zip(tab_classes, tab_name):
+            instance = cls(master=self.notebook)
+            self.tab_instances.append(instance)
+            self.notebook.add(instance, text=name)
 
         self.notebook.pack(fill="both", expand=True)
 
         self.exe_button = tk.Button(master=self, text="実行", command=self.click_exe_button)
         self.exe_button.pack(side="top", pady=10)
 
-        self.__statusbar = Statusbar(master=self)
-
     @property
     def pulse_blocks(self):
-        return self.tab_pulse.pulse_blocks
-    
-    @property
-    def status_bar(self):
-        return self.__statusbar
+        return self.tab_instances[1].pulse_blocks
 
     def click_exe_button(self):
         """
@@ -87,17 +97,19 @@ class Application(tk.Frame):
         selected_tab = self.notebook.index(self.notebook.select())
         if selected_tab == 0:
             parameters = NarmaParam(
-                use_database=self.tab_narma.is_use_prepared_array,
-                model=self.tab_narma.narma_model,
-                pulse_width=self.tab_narma.pulse_width,
-                off_width=self.tab_narma.off_width,
-                tick=self.tab_narma.tick,
-                nodes=self.tab_narma.nodes,
-                discrete_time=self.tab_narma.discrete_time,
-                bot_voltage=self.tab_narma.bot_voltage,
-                top_voltage=self.tab_narma.top_voltage,
-                base_voltage=self.tab_narma.base_voltage
+                use_database=self.tab_instances[0].is_use_prepared_array,
+                model=self.tab_instances[0].narma_model,
+                pulse_width=self.tab_instances[0].pulse_width,
+                off_width=self.tab_instances[0].off_width,
+                tick=self.tab_instances[0].tick,
+                nodes=self.tab_instances[0].nodes,
+                discrete_time=self.tab_instances[0].discrete_time,
+                bot_voltage=self.tab_instances[0].bot_voltage,
+                top_voltage=self.tab_instances[0].top_voltage,
+                base_voltage=self.tab_instances[0].base_voltage
             )
+
+            measure_type_index = fetch_measure_type_index("NARMA")
 
             # self.exe_thread = Thread(target=narma_run, args=(parameters, common_param))
             # self.exe_thread.start()
@@ -111,6 +123,7 @@ class Application(tk.Frame):
             parameters: PulseParameters = {
                 'measure_blocks': self.pulse_blocks
             }
+            measure_type_index = fetch_measure_type_index("2-terminate Pulse")
             self.timer_thread = Thread(target=timer, args=(tot_time, self.status_bar))
             self.timer_thread.start()
 
@@ -119,17 +132,17 @@ class Application(tk.Frame):
 
         if selected_tab == 2:
             parameters = SweepParam(
-                mode=self.tab_sweep.sweep_mode,
-                top_voltage=self.tab_sweep.top_voltage,
-                bottom_voltage=self.tab_sweep.bottom_voltage,
-                voltage_step=self.tab_sweep.voltage_step,
-                loop=self.tab_sweep.loop,
-                tick_time=self.tab_sweep.tick
+                mode=self.tab_instances[2].sweep_mode,
+                top_voltage=self.tab_instances[2].top_voltage,
+                bottom_voltage=self.tab_instances[2].bottom_voltage,
+                voltage_step=self.tab_instances[2].voltage_step,
+                loop=self.tab_instances[2].loop,
+                tick_time=self.tab_instances[2].tick
             )
+            measure_type_index = fetch_measure_type_index("2-terminate I-Vsweep")
 
             self.exe_sweep_thread = Thread(target=sweep_run, args=(parameters, common_param))
             self.exe_sweep_thread.start()
-
 
 
 if __name__ == "__main__":
@@ -138,6 +151,11 @@ if __name__ == "__main__":
     create_samples_table()
     create_pulse_templetes_table()
     create_sweep_templetes_table()
+    create_measures_types_table()
+    append_record_measure_types("NARMA")
+    append_record_measure_types("2-terminate I-Vsweep")
+    append_record_measure_types("2-terminate Pulse")
+    create_history_table()
     root = tk.Tk()
     # root.geometry("530x300")
     # root.resizable(False, False)#ウィンドウサイズをフリーズ

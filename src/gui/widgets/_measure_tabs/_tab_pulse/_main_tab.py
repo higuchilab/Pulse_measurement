@@ -4,9 +4,9 @@ from typing import Literal
 
 from ._components import TreeViewBlocks
 from ._sub_tab import WindowSub
-from ..common_item import make_check_buttons, ParameterInputsForm, TextVariables, TempletesWindow
-from ....core import PulseBlockParam, MeasureBlocks
-from ....core.database import append_record_pulse_templetes, refer_pulse_templetes_table
+from .._common_item import make_check_buttons, ParameterInputsForm, TextVariables, TempletesWindow
+from .....core import PulseBlockParam, MeasureBlocks
+from .....core.database import append_record_pulse_templetes, refer_pulse_templetes_table
 
 
 class TabPulse(Frame):

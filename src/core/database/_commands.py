@@ -3,17 +3,39 @@ from typing import Any
 
 from ..data_processing import PulseBlockParam, SweepParam
 
-connection = sqlite3.connect("example.db")
-
-cursor = connection.cursor()
 
 def connect_database(sql: str, param: tuple=()):
+    """
+    example.dbへアクセスする
+
+    Parameters
+    ----------
+    sql: str
+        SQL文
+    param: tuple
+        SQL文に対するパラメーター
+    """
     with sqlite3.connect("example.db") as conn:
         cursor = conn.cursor()
         cursor.execute(sql, param)
 
 
 def fetch_unique_data(sql: str, param: tuple=()) -> Any:
+    """
+    検索結果が1つのみのデータを抽出
+
+    Parameters
+    ----------
+    sql: str
+        抽出するSQL文
+    param: tuple
+        SQL文に対するパラメーター
+
+    Returns
+    -------
+    result[0]: Any
+        出力レコード
+    """
     with sqlite3.connect("example.db") as conn:
         cursor = conn.cursor()
         cursor.execute(sql, param)
@@ -28,9 +50,16 @@ def fetch_all_data_record(sql: str, param: tuple=()) -> list[tuple]:
     """
     テーブルのデータをレコードごとに取得
 
+    Parameters
+    ----------
+    sql: str
+        抽出するSQL文
+    param: tuple
+        SQL文に対するパラメーター
+
     Returns
     -------
-    result_list: list
+    result_list: list[tuple]
     """
     with sqlite3.connect("example.db") as conn:
         cursor = conn.cursor()
@@ -40,20 +69,28 @@ def fetch_all_data_record(sql: str, param: tuple=()) -> list[tuple]:
     return rows
 
 
-def fetch_all_data(sql: str, param: tuple=()) -> list:
+def fetch_all_data(sql: str, param: tuple=()) -> list[Any]:
     """
-    テーブルのデータを1列だけ取得
+    テーブルのデータをタプルを展開して1列だけ取得
+
+    Parameters
+    ----------
+    sql: str
+        抽出するSQL文
+    param: tuple
+        SQL文に対するパラメーター
 
     Returns
     -------
-    result_list: list
+    result_list: list[Any]
+        抽出結果
     """
     rows = fetch_all_data_record(sql, param)
     result_list = [row[0] for row in rows]
     return result_list
 
 
-def fetch_all_data_column(sql: str, param: tuple=()) -> list[list]:
+def fetch_all_data_column(sql: str, param: tuple=()) -> list[list[Any]]:
     """
     テーブルのデータをカラムごとに取得
 
@@ -183,6 +220,7 @@ def refer_samples_table(material_name) -> list[str]:
     material_id = fetch_unique_data(sql_fetch_material_id, (material_name,))
     if material_id == None:
         return []
+    
     sql_refer_samples = '''
         SELECT sample_name FROM samples WHERE material_id = ?
     '''
