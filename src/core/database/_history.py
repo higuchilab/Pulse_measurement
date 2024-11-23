@@ -83,7 +83,7 @@ def append_record_history(param: HistoryParam):
     user_id = fetch_unique_data(sql_fetch_user_id, (param.user_name,))
 
     sql_fetch_sample_id = '''
-        SELECT id FROM samples WHERE name = ?
+        SELECT id FROM samples WHERE sample_name = ?
     '''
     sample_id = fetch_unique_data(sql_fetch_sample_id, (param.sample_name,))
 

@@ -155,6 +155,7 @@ class MeasurementExecutor:
         try:
             self._connect_device()
             measure_model = self.strategy.create_measure_model()
+            print("測定開始")
             output = measure(measure_model=measure_model, dev=self.device)
             
             write_command("SBY", self.device)

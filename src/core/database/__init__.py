@@ -26,6 +26,7 @@ __all__ = [
     "append_record_history",
     "refer_history_table",
     "fetch_measure_type_index",
+    "create_two_terminal_results_table",
     "create_narma_templetes_table",
     "append_record_narma_templetes",
     "create_narma_input_array",
