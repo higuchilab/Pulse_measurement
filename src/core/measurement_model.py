@@ -220,8 +220,10 @@ class PulseModel(MeasureModelTemplete):
             for _ in range(block.loop):
                 base = [block.V_base for _ in range(int(block.base_time / self.tick))]
                 top = [block.V_top for _ in range(int(block.top_time / self.tick))]
-                interval = [block.V_base for _ in range(int(block.interval / self.tick))]
-                v_list += base + top + interval
+                v_list += base + top
+
+            interval = [block.V_base for _ in range(int(block.interval / self.tick))]
+            v_list += interval
             return v_list
         
         standarded_block_list = self.blocks.export_standarded_blocks()

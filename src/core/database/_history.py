@@ -1,8 +1,8 @@
 import sqlite3
-from typing import Any, Literal
+from typing import Any, Literal, Optional, Sequence, TypedDict
 
 from ..data_processing import HistoryParam, ReferHistoryParam
-from ._commands import connect_database, fetch_unique_data, fetch_all_data_record
+from ._commands import connect_database, connect_database_and_get_primary_key, fetch_unique_data, fetch_all_data_record
 
 def create_measures_types_table():
     """
@@ -43,7 +43,7 @@ def refer_measure_types_table() -> list[tuple]:
     return sweep_templete_list
 
 
-def fetch_measure_type_index(measure_type: Literal["NARMA", "2-terminate I-Vsweep", "2-terminate Pulse"]) -> int:
+def fetch_measure_type_index(measure_type: Literal["NARMA", "2-terminal I-Vsweep", "2-terminal Pulse"]) -> int:
     sql_fetch_material_id = '''
         SELECT id FROM measure_types WHERE name = ?
     '''
@@ -95,7 +95,18 @@ def append_record_history(param: HistoryParam):
     sql_insert = '''
         INSERT OR IGNORE INTO history (user_id, sample_id, measure_type_id, option) VALUES (?, ?, ?, ?)
     '''
-    connect_database(sql_insert, (user_id, sample_id, measure_type_id, param.option))
+    # connect_database(sql_insert, (user_id, sample_id, measure_type_id, param.option))
+    last_id = connect_database_and_get_primary_key(sql_insert, (user_id, sample_id, measure_type_id, param.option))
+    return last_id
+
+
+class HistoryRecord(TypedDict):
+    created_at: str
+    user_name: str
+    material_name: str
+    sample_name: str
+    measure_type: str
+    option: Optional[str]
 
 
 def refer_history_table(param: ReferHistoryParam) -> list[tuple]:
@@ -108,40 +119,36 @@ def refer_history_table(param: ReferHistoryParam) -> list[tuple]:
     """
     query = '''
         SELECT 
-            history.created_at,
-            users.name,
-            materials.name,
-            samples.sample_name,
-            measure_types.name,
-            history.option
+            h.created_at,
+            u.name,
+            m.name,
+            s.sample_name,
+            mt.name,
+            h.option
         FROM 
-            history
-        LEFT JOIN
-            users ON history.user_id = users.id
-        LEFT JOIN
-            samples ON history.sample_id = samples.id
-        LEFT JOIN
-            measure_types ON history.measure_type_id = measure_types.id
-        LEFT JOIN
-            materials ON samples.material_id = materials.id
+            history h
+        INNER JOIN users u ON h.user_id = u.id
+        INNER JOIN samples s ON h.sample_id = s.id
+        INNER JOIN measure_types mt ON h.measure_type_id = mt.id
+        INNER JOIN materials m ON s.material_id = m.id
         WHERE 1=1
     '''
     params = []
 
     if param.operator:
-        query += " AND users.name = ?"
+        query += " AND u.name = ?"
         params.append(param.operator)
 
     if param.material:
-        query += " AND materials.name = ?"
+        query += " AND m.name = ?"
         params.append(param.material)
 
     if param.sample:
-        query += " AND samples.sample_name = ?"
+        query += " AND s.sample_name = ?"
         params.append(param.sample)
 
     if param.measure_type:
-        query += " AND measure_types.name = ?"
+        query += " AND mt.name = ?"
         params.append(param.measure_type)
 
       

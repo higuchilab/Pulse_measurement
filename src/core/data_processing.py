@@ -38,9 +38,17 @@ class Datas():
         wb.save(filepath)
         wb.close()
 
+@dataclass
+class CommonParameters:
+    operator: str
+    material: str
+    sample_name: str
+    option: str
+    file_path: str
+
 
 @dataclass(frozen=True)
-class PulseMeasureOutputSingle:
+class TwoTerminalOutput:
     voltage: NDArray
     current: NDArray
     time: NDArray
