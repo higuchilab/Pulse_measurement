@@ -1,12 +1,50 @@
 import sqlite3
 from typing import Any
+from contextlib import contextmanager
 
 from ..data_processing import PulseBlockParam, SweepParam
 
+# 共通のデータベース設定を定数として定義
+DATABASE_NAME = "example.db"
 
-def connect_database(sql: str, param: tuple=()):
+# コンテキストマネージャーの作成
+@contextmanager
+def database_connection():
+    """データベース接続のコンテキストマネージャー"""
+    conn = sqlite3.connect(DATABASE_NAME)
+    try:
+        yield conn
+    finally:
+        conn.close()
+
+
+def connect_database(sql: str, param: tuple = ()) -> None:
+    """データベースへの接続と実行を行う"""
+    with database_connection() as conn:
+        conn.execute(sql, param)
+        conn.commit()
+
+
+def connect_database_many(sql: str, param: list[tuple]):
     """
-    example.dbへアクセスする
+    example.dbへexecutemanyでアクセスする
+
+    Parameters
+    ----------
+    sql: str
+        SQL文
+    param: tuple
+        SQL文に対するパラメーター
+    """
+    with sqlite3.connect("example.db") as conn:
+        cursor = conn.cursor()
+        cursor.executemany(sql, param)
+        conn.commit()
+
+
+def connect_database_and_get_primary_key(sql: str, param: tuple=()) -> int:
+    """
+    example.dbへアクセスしprimarykeyを取得する(INSERTで使用)
 
     Parameters
     ----------
@@ -18,32 +56,15 @@ def connect_database(sql: str, param: tuple=()):
     with sqlite3.connect("example.db") as conn:
         cursor = conn.cursor()
         cursor.execute(sql, param)
+        last_id = cursor.lastrowid
+        return last_id
 
 
-def fetch_unique_data(sql: str, param: tuple=()) -> Any:
-    """
-    検索結果が1つのみのデータを抽出
-
-    Parameters
-    ----------
-    sql: str
-        抽出するSQL文
-    param: tuple
-        SQL文に対するパラメーター
-
-    Returns
-    -------
-    result[0]: Any
-        出力レコード
-    """
-    with sqlite3.connect("example.db") as conn:
-        cursor = conn.cursor()
-        cursor.execute(sql, param)
-        result = cursor.fetchone()
-        if result == None:
-            return None
-        
-        return result[0]
+def fetch_unique_data(sql: str, param: tuple = ()) -> Any:
+    """単一のデータを取得する"""
+    with database_connection() as conn:
+        result = conn.execute(sql, param).fetchone()
+        return result[0] if result else None
 
 
 def fetch_all_data_record(sql: str, param: tuple=()) -> list[tuple]:

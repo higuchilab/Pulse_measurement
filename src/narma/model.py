@@ -2,7 +2,9 @@ import numpy as np
 from typing import Literal
 from numpy.typing import NDArray
 
-def use_narma_dataset(use_database: bool, model: Literal["narma2", "narma10"], steps: int=None, input_range_bot: float=None, input_range_top: float=None) -> tuple[NDArray, NDArray, NDArray, NDArray]:
+from ..core.database import append_record_narma_templetes, append_narma_input_array
+
+def use_narma_input_array(use_database: bool, model: Literal["narma2", "narma10"], steps: int=None, input_range_bot: float=None, input_range_top: float=None) -> tuple[NDArray, NDArray, NDArray, NDArray]:
     """
     NARMAデータセットを使う
 
@@ -21,20 +23,15 @@ def use_narma_dataset(use_database: bool, model: Literal["narma2", "narma10"], s
 
     Returns
     -------
-    u_train: NDArray
-        入力配列(訓練用)
-    y_train: NDArray
-        出力配列(訓練用)
-    u_test: NDArray
-        入力配列(テスト用)
-    u_test: NDArray
-        出力配列(テスト用)
+    u: NDArray
+        入力配列
+    y: NDArray
+        出力配列
     """
     if use_database:
         return call_narma_dataset()
 
     return generate_narma_dataset(model, steps, input_range_bot, input_range_top)
-
 
 
 def generate_narma2(u: NDArray[np.float64], steps: int) -> NDArray[np.float64]:
@@ -68,27 +65,27 @@ def generate_narma_dataset(model: Literal["narma2", "narma10"], steps: int, inpu
 
     Returns
     -------
-    u_train: NDArray
-        入力配列(訓練用)
-    y_train: NDArray
-        出力配列(訓練用)
-    u_test: NDArray
-        入力配列(テスト用)
-    u_test: NDArray
-        出力配列(テスト用)
+    u: NDArray
+        入力配列
     """
-
     if model not in ["narma2", "narma10"]:
         raise ValueError(f"Invalid model: {model}. Allowed values are 'narma2', 'narma10'.")
+    
+    narma_templete_id = append_record_narma_templetes(param=(steps, input_range_top, input_range_bot))
 
     u = np.random.uniform(input_range_bot, input_range_top, steps)
 
-    # NARMAデータの生成
-    if model == "narma2":
-        y = generate_narma2(u, steps)
+    # # NARMAデータの生成
+    # if model == "narma2":
+    #     y = generate_narma2(u, steps)
 
-    if model == "narma10":
-        y = generate_narma10(u, steps)
+    # if model == "narma10":
+    #     y = generate_narma10(u, steps)
+
+    data = [(narma_templete_id, i, voltage) for i, voltage in enumerate(u)]
+    append_narma_input_array(param=data)
+
+    return u
 
     #訓練データとテストデータに分割
     train_size = int(steps * 0.8)  # 80%を訓練データに

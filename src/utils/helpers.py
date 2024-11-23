@@ -1,10 +1,11 @@
 import os
+import time
 from numpy.typing import NDArray
 from typing import Any, Dict, List, Callable
 import tkinter as tk
 from tkinter import filedialog
 
-from src.core.data_processing import Datas, PulseMeasureOutputSingle
+from src.core.data_processing import Datas, TwoTerminalOutput
 from src.visualization import graph
 
 
@@ -18,7 +19,18 @@ def set_folder_func(textboxes: Any) -> callable:
     return inner
 
 
-def plot_data(output: PulseMeasureOutputSingle) -> None:
+def timer(measure_times: float, statusbar: Any, timer_flag: bool = False) -> None:
+    """測定時間のカウントダウンを行い、ステータスバーに表示します。"""
+    start_time = time.perf_counter()
+    while time.perf_counter() - start_time < measure_times:
+        if timer_flag:
+            statusbar.swrite(f"合計時間: {time.perf_counter() - start_time:.1f} [s]")
+            break
+        statusbar.swrite(f"{time.perf_counter() - start_time:.1f}/{measure_times:.1f}")
+        time.sleep(0.1)
+
+
+def plot_data(output: TwoTerminalOutput) -> None:
     """データのプロットと保存を行います。"""
     # totaltime_list = calculate_total_time(output.time)
     graph(output.time, output.voltage, output.current)

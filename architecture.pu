@@ -1,0 +1,204 @@
+@startuml measurement_system_architecture
+
+' クラス図
+package "GUI" {
+  class Application {
+    - statusbar: Statusbar
+    + status_bar: property
+  }
+
+  class MainWindow {
+    - statusbar: Statusbar
+    - measure_window: MeasureWindow
+    - history_window: HistoryWindow
+    - sidebar: Sidebar
+    + status_bar: property
+  }
+
+  class MeasureWindow {
+    - statusbar: Statusbar
+    - form_top: common_input_form
+    - notebook: Notebook
+    - tab_instances: list
+    - execution_strategies: dict
+    + click_exe_button()
+    - _get_common_parameters()
+    - _update_database_records()
+  }
+
+  class HistoryWindow {
+    - tree_view_history: TreeViewHistory
+  }
+}
+
+package "Measurement Strategies" {
+  interface ExecutionStrategy {
+    + get_parameters()
+    + execute()
+    + pre_execute()
+  }
+
+  class NarmaExecutionStrategy {
+    - tab: TabNarma
+    + get_parameters(): NarmaParam
+    + execute()
+    + pre_execute()
+  }
+
+  class PulseExecutionStrategy {
+    - tab: TabPulse
+    - status_bar: Statusbar
+    + get_parameters(): PulseParameters
+    + execute()
+    + pre_execute()
+  }
+
+  class SweepExecutionStrategy {
+    - tab: TabSweep
+    + get_parameters(): SweepParam
+    + execute()
+  }
+}
+
+package "Core" {
+  class MeasurementExecutor {
+    - strategy: MeasurementStrategy
+    - common_param: CommonParameters
+    - device: Any
+    + execute()
+    - _connect_device()
+    - _save_results()
+  }
+
+  class MeasureModel {
+    - blocks: MeasureBlocks
+    - tick: float
+    + input_V_list: property
+    + make_model_from_narma_input_array()
+  }
+}
+
+' データベース図
+package "Database" {
+  entity "users" {
+    * id: INTEGER <<PK>>
+    --
+    * name: TEXT <<UNIQUE>>
+    created_at: TIMESTAMP
+  }
+
+  entity "materials" {
+    * id: INTEGER <<PK>>
+    --
+    * name: TEXT <<UNIQUE>>
+    created_at: TIMESTAMP
+  }
+
+  entity "samples" {
+    * id: INTEGER <<PK>>
+    --
+    * material_id: INTEGER <<FK>>
+    * sample_name: TEXT
+    created_at: TIMESTAMP
+  }
+
+  entity "measure_types" {
+    * id: INTEGER <<PK>>
+    --
+    * name: TEXT <<UNIQUE>>
+    created_at: TIMESTAMP
+  }
+
+  entity "history" {
+    * id: INTEGER <<PK>>
+    --
+    * user_id: INTEGER <<FK>>
+    * sample_id: INTEGER <<FK>>
+    * measure_type_id: INTEGER <<FK>>
+    option: TEXT
+    created_at: TIMESTAMP
+  }
+
+  entity "pulse_templetes" {
+    * id: INTEGER <<PK>>
+    --
+    * top_voltage: REAL
+    * top_time: REAL
+    * base_voltage: REAL
+    * base_time: REAL
+    * loop: INTEGER
+    * interval_time: REAL
+    created_at: TIMESTAMP
+  }
+
+  entity "sweep_templetes" {
+    * id: INTEGER <<PK>>
+    --
+    * top_voltage: REAL
+    * bottom_voltage: REAL
+    * voltage_step: REAL
+    * loop: INTEGER
+    * tick_time: REAL
+    created_at: TIMESTAMP
+  }
+
+  entity "two_terminal_results" {
+    * id: INTEGER <<PK>>
+    --
+    * history_id: INTEGER <<FK>>
+    * time: REAL
+    * voltage: REAL
+    * current: REAL
+    created_at: TIMESTAMP
+  }
+
+  entity "four_terminal_results" {
+    * id: INTEGER <<PK>>
+    --
+    * history_id: INTEGER <<FK>>
+    * time: REAL
+    * voltage_1: REAL
+    * current_1: REAL
+    * voltage_2: REAL
+    * current_2: REAL
+    created_at: TIMESTAMP
+  }
+
+  entity "narma_templetes" {
+    * id: INTEGER <<PK>>
+    --
+    * discrete_time: INTEGER
+    * min_pulse_voltage: REAL
+    * max_pulse_voltage: REAL
+    created_at: TIMESTAMP
+  }
+
+  entity "narma_input_arrays" {
+    * id: INTEGER <<PK>>
+    --
+    * narma_templete_id: INTEGER <<FK>>
+    * discrete_time: INTEGER
+    * input_voltage: REAL
+    created_at: TIMESTAMP
+  }
+
+' リレーションシップ
+Application o-- MainWindow
+MainWindow o-- MeasureWindow
+MainWindow o-- HistoryWindow
+MeasureWindow --> ExecutionStrategy
+
+ExecutionStrategy <|.. NarmaExecutionStrategy
+ExecutionStrategy <|.. PulseExecutionStrategy
+ExecutionStrategy <|.. SweepExecutionStrategy
+
+users ||--o{ history
+materials ||--o{ samples
+samples ||--o{ history
+measure_types ||--o{ history
+
+history ||--o{ two_terminal_results
+history ||--o{ four_terminal_results
+narma_templetes ||--o{ narma_input_arrays
+
+@enduml

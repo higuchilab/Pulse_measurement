@@ -1,32 +1,30 @@
 import time
-import threading
-import os
-import numpy as np
-from typing import TypedDict
-
-from typing import List, Dict, Any
+from typing import TypedDict, Protocol, Any
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from enum import Enum, auto
 from openpyxl import Workbook, load_workbook
-from ..visualization import graph, livegraph
-from .data_processing import Datas, PulseMeasureOutputSingle, NarmaParam, SweepParam
-from .measurement_model import MeasureBlock, MeasureBlocks, PulseModel, MeasureModelTemplete, SweepModel
+
+from ..visualization import graph
+from .data_processing import TwoTerminalOutput, NarmaParam, SweepParam, CommonParameters, HistoryParam
+from .measurement_model import MeasureBlocks, PulseModel, MeasureModelTemplete, SweepModel
 from ..utils import plot_data
 from .device_control import write_command, prepare_device, device_connection
+from .database import append_two_terminal_results, append_record_history
 
-from ..narma.model import use_narma_dataset
+from ..narma.model import use_narma_input_array
 
-# 定数
-INTERVAL_TIME = 0.041463354054055365  # [s] 実行環境によって異なるので適時調整
+# 定数の分離
+class Constants:
+    VISA_DLL_PATH = r'C:\WINDOWS\system32\visa64.dll'
+    GPIB_ADDRESS = 'GPIB1::1::INSTR'
+    INTERVAL_TIME = 0.041463354054055365
 
-# パラメータの型を定義
-class CommonParameters(TypedDict):
-    user_name: str
-    material: str
-    sample_num: str
-    file_path: str
-
-
-class PulseParameters(TypedDict):
-    measure_blocks: MeasureBlocks
+# 測定タイプの列挙
+class MeasurementType(Enum):
+    PULSE = "2-terminal Pulse"
+    NARMA = "NARMA"
+    SWEEP = "2-terminal I-Vsweep"
 
 
 def stop_func(statusbar: Any) -> None:
@@ -34,117 +32,161 @@ def stop_func(statusbar: Any) -> None:
     statusbar.swrite("測定中断")
 
 
-def timer(measure_times: float, statusbar: Any, timer_flag: bool = False) -> None:
-    """測定時間のカウントダウンを行い、ステータスバーに表示します。"""
-    start_time = time.perf_counter()
-    while time.perf_counter() - start_time < measure_times:
-        if timer_flag:
-            statusbar.swrite(f"合計時間: {time.perf_counter() - start_time:.1f} [s]")
-            break
-        statusbar.swrite(f"{time.perf_counter() - start_time:.1f}/{measure_times:.1f}")
-        time.sleep(0.1)
+class PulseParameters(TypedDict):
+    measure_blocks: MeasureBlocks
+
+# 測定戦略のインターフェース
+class MeasurementStrategy(Protocol):
+    def create_measure_model(self) -> MeasureModelTemplete:
+        """測定モデルを作成"""
+        pass
+
+    def get_measurement_type(self) -> str:
+        """測定タイプを取得"""
+        pass
+
+    def post_process(self, output: TwoTerminalOutput) -> None:
+        """測定後の追加処理"""
+        pass
+
+# 具体的な測定戦略の実装
+class PulseMeasurementStrategy:
+    def __init__(self, params: PulseParameters):
+        self.parameters = params
+
+    def create_measure_model(self) -> MeasureModelTemplete:
+        return PulseModel(self.parameters["measure_blocks"])
+
+    def get_measurement_type(self) -> str:
+        return MeasurementType.PULSE.value
+
+    def post_process(self, output: TwoTerminalOutput) -> None:
+        plot_data(output)
 
 
-def pulse_run(
-        parameters: PulseParameters,
-        common_param: CommonParameters
-        ):
-    """パルス測定を実行"""
-    VISA_DLL_PATH = r'C:\WINDOWS\system32\visa64.dll'
-    GPIB_ADDRESS = 'GPIB1::1::INSTR'
-    try:
-        dev = device_connection(visa_dll_path=VISA_DLL_PATH, gpib_address=GPIB_ADDRESS)
-    except:
-        raise ConnectionError(f"Fail to connect device '{GPIB_ADDRESS}'")
+class SweepMeasurementStrategy:
+    def __init__(self, params: SweepParam):
+        self.parameters = params
+
+    def create_measure_model(self) -> MeasureModelTemplete:
+        return SweepModel(self.parameters)
     
-    prepare_device(dev)
-    measure_model = PulseModel(parameters["measure_blocks"])
-    # print(measure_model.input_V_list)
-    output = measure(measure_model=measure_model, dev=dev)
-    print("測定終了")
-    plot_data(output)
-
-    if common_param["file_path"] == "":
-        return
+    def get_measurement_type(self) -> str:
+        return MeasurementType.SWEEP.value
     
-    output_to_excel_file(common_param["file_path"], output=output)
+    def post_process(self, output: TwoTerminalOutput) -> None:
+        plot_data(output)
 
 
-def narma_run(
-        parameters: NarmaParam,
-        common_param: CommonParameters
-        ):
-    """NARMA測定を実行"""
-    #パラメーターを取得 測定者，物質名，試料No，備考，model，パルス幅，休止幅，tick，仮想ノード，離散時間，電圧上限，電圧下限
+class NarmaMeasurementStrategy:
+    def __init__(self, params: NarmaParam):
+        self.parameters = params
+        self.input_value = None
+        self.correct_value = None
+        self._prepare_dataset()
 
-    #入力列の作成or呼び出し
-    x_train, y_train, x_test, y_test = use_narma_dataset(
-        use_database=parameters.use_database,
-        model=parameters.model,
-        steps=parameters.discrete_time,
-        input_range_bot=parameters.bot_voltage,
-        input_range_top=parameters.top_voltage
-    )
+    def _prepare_dataset(self):
+        self.input_value = use_narma_input_array(
+            use_database=self.parameters.use_database,
+            model=self.parameters.model,
+            steps=self.parameters.discrete_time,
+            input_range_bot=self.parameters.bot_voltage,
+            input_range_top=self.parameters.top_voltage
+        )
 
-    #測定装置の準備
-    VISA_DLL_PATH = r'C:\WINDOWS\system32\visa64.dll'
-    GPIB_ADDRESS = 'GPIB1::1::INSTR'
-    try:
-        dev = device_connection(visa_dll_path=VISA_DLL_PATH, gpib_address=GPIB_ADDRESS)
-    except:
-        raise ConnectionError(f"Fail to connect device '{GPIB_ADDRESS}'")
-    prepare_device(dev)
-    #測定モデル作成
-    measure_model_train = PulseModel
-    measure_model_train.make_model_from_narma_input_array(
-        pulse_width=parameters.pulse_width,
-        off_width=parameters.off_width,
-        tick=parameters.tick,
-        base_voltage=parameters.base_voltage,
-        input_array=x_train)
-
-    measure_model_test = PulseModel
-    measure_model_test.make_model_from_narma_input_array(
-        pulse_width=parameters.pulse_width,
-        off_width=parameters.off_width,
-        tick=parameters.tick,
-        base_voltage=parameters.base_voltage,
-        input_array=x_test)
-
-    #測定実行
-    output_data_train = measure(measure_model=measure_model_train, dev=dev)
-    output_data_test = measure(measure_model=measure_model_test, dev=dev)
-
-    #データ保存
-
-    #ファイル出力
+    def create_measure_model(self) -> MeasureModelTemplete:
+        return PulseModel.make_model_from_narma_input_array(
+            pulse_width=self.parameters.pulse_width,
+            off_width=self.parameters.off_width,
+            tick=self.parameters.tick,
+            base_voltage=self.parameters.base_voltage,
+            input_array=self.input_value
+        )
+        return PulseModel.make_model_from_narma_input_array(
+            pulse_width=self.parameters.pulse_width,
+            off_width=self.parameters.off_width,
+            tick=self.parameters.tick,
+            base_voltage=self.parameters.base_voltage,
+            input_array=self.x_test
+        )
 
 
-def sweep_run(
-        param: SweepParam,
-        common_param: CommonParameters
-    ):
-    VISA_DLL_PATH = r'C:\WINDOWS\system32\visa64.dll'
-    GPIB_ADDRESS = 'GPIB1::1::INSTR'
-    try:
-        dev = device_connection(visa_dll_path=VISA_DLL_PATH, gpib_address=GPIB_ADDRESS)
-    except:
-        raise ConnectionError(f"Fail to connect device '{GPIB_ADDRESS}'")
-    
-    prepare_device(dev)
-    measure_model = SweepModel(param)
-    output = measure(measure_model=measure_model, dev=dev)
-    write_command("SBY", dev)
-    print("測定終了")
-    plot_data(output)
+    def get_measurement_type(self) -> str:
+        return MeasurementType.NARMA.value
 
-    if common_param["file_path"] == "":
-        return
-    
-    output_to_excel_file(common_param["file_path"], output=output)
+    def post_process(self, output: TwoTerminalOutput) -> None:
+        plot_data(output)
+        # NARMA特有の後処理があれば実装
+
+# メイン測定クラス
+class MeasurementExecutor:
+    def __init__(self, strategy: MeasurementStrategy, common_param: CommonParameters):
+        self.strategy = strategy
+        self.common_param = common_param
+        self.device = None
+
+    def _connect_device(self):
+        """デバイスへの接続"""
+        try:
+            self.device = device_connection(
+                visa_dll_path=Constants.VISA_DLL_PATH,
+                gpib_address=Constants.GPIB_ADDRESS
+            )
+            prepare_device(self.device)
+        except Exception as e:
+            raise ConnectionError(f"Failed to connect device '{Constants.GPIB_ADDRESS}': {str(e)}")
+
+    def _save_results(self, output: TwoTerminalOutput) -> None:
+        """結果の保存"""
+        history_param = HistoryParam(
+            user_name=self.common_param.operator,
+            sample_name=self.common_param.sample_name,
+            measure_type=self.strategy.get_measurement_type(),
+            option=self.common_param.option
+        )
+        history_id = append_record_history(history_param)
+        save_data_to_database(history_id=history_id, output=output)
+
+        if self.common_param.file_path:
+            output_to_excel_file(self.common_param.file_path, output=output)
+
+    def execute(self) -> TwoTerminalOutput:
+        """測定の実行"""
+        try:
+            self._connect_device()
+            measure_model = self.strategy.create_measure_model()
+            output = measure(measure_model=measure_model, dev=self.device)
+            
+            write_command("SBY", self.device)
+            print("測定終了")
+
+            self.strategy.post_process(output)
+            self._save_results(output)
+
+            return output
+
+        finally:
+            if self.device:
+                write_command("SBY", self.device)
+
+# 既存の関数をリファクタリング
+def pulse_run(parameters: PulseParameters, common_param: CommonParameters):
+    strategy = PulseMeasurementStrategy(parameters)
+    executor = MeasurementExecutor(strategy, common_param)
+    return executor.execute()
+
+def narma_run(parameters: NarmaParam, common_param: CommonParameters):
+    strategy = NarmaMeasurementStrategy(parameters)
+    executor = MeasurementExecutor(strategy, common_param)
+    return executor.execute()
+
+def sweep_run(parameters: SweepParam, common_param: CommonParameters):
+    strategy = SweepMeasurementStrategy(parameters)
+    executor = MeasurementExecutor(strategy, common_param)
+    return executor.execute()
 
 
-def measure(measure_model: MeasureModelTemplete, dev: any) -> PulseMeasureOutputSingle:
+def measure(measure_model: MeasureModelTemplete, dev: any) -> TwoTerminalOutput:
     V_list = []
     A_list = []
     time_list = []
@@ -172,12 +214,12 @@ def measure(measure_model: MeasureModelTemplete, dev: any) -> PulseMeasureOutput
         
         graph(time_list, V_list, A_list)
 
-    output_data = PulseMeasureOutputSingle(voltage=V_list, current=A_list, time=time_list)
+    output_data = TwoTerminalOutput(voltage=V_list, current=A_list, time=time_list)
 
     return output_data
 
 
-def output_to_excel_file(file_path: str, output: PulseMeasureOutputSingle):
+def output_to_excel_file(file_path: str, output: TwoTerminalOutput):
     wb = Workbook()
     wb.save(file_path)
     wb = load_workbook(file_path)
@@ -195,3 +237,8 @@ def output_to_excel_file(file_path: str, output: PulseMeasureOutputSingle):
 
     wb.save(file_path)
     wb.close()
+
+
+def save_data_to_database(history_id: int, output: TwoTerminalOutput):
+    data = [(history_id, time, voltage, current) for time, voltage, current in zip(output.time, output.voltage, output.current)]
+    append_two_terminal_results(param=data)
