@@ -278,7 +278,7 @@ class TabPulseLeftButtons(Frame):
         super().__init__(master=master)
         self.__add_block_button = Button(master=self, text="ブロックを追加", cursor='hand1')
         self.__add_block_button.bind("<Button-1>", measure_blocks.append_new_block)
-        self.__add_block_button.bind("<Button-1>", treeview.add_item, add='+')
+        self.__add_block_button.bind("<Button-1>", treeview.load_blocks, add='+')
 
         self.__add_block_button.pack(side="left", padx=2)
         self.__del_block_button = Button(master=self, text="プロックを削除", cursor='hand1')

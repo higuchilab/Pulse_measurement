@@ -10,7 +10,8 @@ class TreeViewBlocks(Treeview):
     """
     def __init__(self, master, measure_blocks: MeasureBlocks):
         super().__init__(master=master, columns=("V_top", "top_time", "V_base", "base_time", "loop", "interval"), selectmode="browse", show="headings")
-        self.__measure_blocks = measure_blocks.blocks
+        self.__measure_blocks = measure_blocks
+        # self.__measure_blocks = measure_blocks.blocks
 
         self.column("V_top", width=50, minwidth=50)
         self.column("top_time", width=50, minwidth=50)
@@ -28,16 +29,53 @@ class TreeViewBlocks(Treeview):
 
         self.load_blocks()
 
+        self.dragged_item = None
+
+        self.bind("<ButtonPress-1>", self.start_drag)
+        self.bind("<B1-Motion>", self.on_drag)
+        self.bind("<ButtonRelease-1>", self.end_drag)
+
     @property
-    def measure_blocks(self) -> list[MeasureBlock]:
+    def measure_blocks(self) -> MeasureBlocks:
         return self.__measure_blocks
     
-    def load_blocks(self):
-        for block in self.measure_blocks:
-            self.insert("", "end", text="test2", values=(block.V_top, block.top_time, block.V_base, block.base_time, block.loop, block.interval))
+    def start_drag(self, event):
+        # ドラッグ開始位置のアイテムを取得
+        item = self.identify_row(event.y)
+        if item:
+            self.dragged_item = item
 
-    def add_item(self, *arg):
-        self.insert("", "end", text="test2", values=(self.measure_blocks[-1].V_top, self.measure_blocks[-1].top_time, self.measure_blocks[-1].V_base, self.measure_blocks[-1].base_time, self.measure_blocks[-1].loop, self.measure_blocks[-1].interval))
+    def on_drag(self, event):
+        # ドラッグ中の位置をハイライト表示
+        item = self.identify_row(event.y)
+        if item and item != self.dragged_item:
+            self.selection_set(item)
+
+    def end_drag(self, event):
+        if not self.dragged_item:
+            return
+
+        # ドラッグ先のアイテムを取得
+        target_item = self.identify_row(event.y)
+        if target_item and target_item != self.dragged_item:
+            # 元の位置とターゲット位置を取得
+            dragged_index = self.index(self.dragged_item)
+            target_index = self.index(target_item)
+
+            # データを再配置
+            self.measure_blocks.change_position_block(dragged_index, target_index)
+
+            # Treeviewを更新
+            self.load_blocks()
+
+        # ドラッグのリセット
+        self.dragged_item = None    
+    
+    def load_blocks(self, *arg):
+        for item in self.get_children():
+            self.delete(item)
+        for block in self.measure_blocks.blocks:
+            self.insert("", "end", text="test2", values=(block.V_top, block.top_time, block.V_base, block.base_time, block.loop, block.interval))
 
     def del_item(self, *arg):
         self.delete(self.focus())

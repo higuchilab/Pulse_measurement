@@ -146,6 +146,9 @@ class MeasureBlocks():
         new_block = MeasureBlock(loop, V_top, V_base, top_time, base_time, interval)
         self.__blocks.append(new_block)
 
+    def change_position_block(self, changed_item_index: int, target_index: int) -> None:
+        self.__blocks.insert(target_index, self.__blocks.pop(changed_item_index))
+
     def del_block(self, *arg, index):
         self.__blocks.pop(index)
 
