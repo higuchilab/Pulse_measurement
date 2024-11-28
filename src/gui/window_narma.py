@@ -14,7 +14,7 @@ if project_root not in sys.path:
 
 from src.gui.widgets import common_input_form, TabNarma, TabPulse, TabSweep, Statusbar, Sidebar, HistoryWindow
 
-from src.core.database import create_users_table, append_record_users, refer_users_table, create_materials_table, append_record_materials, refer_materials_table, create_samples_table, append_record_samples, refer_samples_table, create_pulse_templetes_table, create_sweep_templetes_table, create_measures_types_table, create_history_table, append_record_measure_types, fetch_measure_type_index, create_two_terminal_results_table
+from src.core.database import create_users_table, append_record_users, refer_users_table, create_materials_table, append_record_materials, refer_materials_table, create_samples_table, append_record_samples, refer_samples_table, create_pulse_templetes_table, create_sweep_templetes_table, create_measures_types_table, create_history_table, append_record_measure_types, fetch_measure_type_index, create_two_terminal_results_table, create_narma_templetes_table, create_narma_input_array
 
 from src.core import narma_run, CommonParameters, PulseParameters, SweepParam, NarmaParam, pulse_run, sweep_run
 
@@ -230,6 +230,8 @@ if __name__ == "__main__":
     append_record_measure_types("2-terminal Pulse")
     create_two_terminal_results_table()
     create_history_table()
+    create_narma_templetes_table()
+    create_narma_input_array()
     root = tk.Tk()
     # root.geometry("530x300")
     # root.resizable(False, False)#ウィンドウサイズをフリーズ

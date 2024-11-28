@@ -201,7 +201,7 @@ class MeasureModelTemplete(metaclass = ABCMeta):
 
 
 class PulseModel(MeasureModelTemplete):
-    def __init__(self, blocks: MeasureBlock):
+    def __init__(self, blocks: MeasureBlocks):
         super().__init__(tick=0.5)
         self.__blocks = blocks
 

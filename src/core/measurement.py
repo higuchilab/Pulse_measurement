@@ -95,20 +95,23 @@ class NarmaMeasurementStrategy:
         )
 
     def create_measure_model(self) -> MeasureModelTemplete:
-        return PulseModel.make_model_from_narma_input_array(
+        new_pulse_blocks = MeasureBlocks()
+        new_pulse_model = PulseModel(new_pulse_blocks)
+        new_pulse_model.make_model_from_narma_input_array(
             pulse_width=self.parameters.pulse_width,
             off_width=self.parameters.off_width,
             tick=self.parameters.tick,
             base_voltage=self.parameters.base_voltage,
             input_array=self.input_value
         )
-        return PulseModel.make_model_from_narma_input_array(
-            pulse_width=self.parameters.pulse_width,
-            off_width=self.parameters.off_width,
-            tick=self.parameters.tick,
-            base_voltage=self.parameters.base_voltage,
-            input_array=self.x_test
-        )
+        return new_pulse_model
+        # return PulseModel.make_model_from_narma_input_array(
+        #     pulse_width=self.parameters.pulse_width,
+        #     off_width=self.parameters.off_width,
+        #     tick=self.parameters.tick,
+        #     base_voltage=self.parameters.base_voltage,
+        #     input_array=self.x_test
+        # )
 
 
     def get_measurement_type(self) -> str:
@@ -155,6 +158,7 @@ class MeasurementExecutor:
         try:
             self._connect_device()
             measure_model = self.strategy.create_measure_model()
+            print(measure_model)
             print("測定開始")
             output = measure(measure_model=measure_model, dev=self.device)
             
