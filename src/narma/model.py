@@ -4,7 +4,7 @@ from numpy.typing import NDArray
 
 from ..core.database import append_record_narma_templetes, append_narma_input_array
 
-def use_narma_input_array(use_database: bool, model: Literal["narma2", "narma10"], steps: int=None, input_range_bot: float=None, input_range_top: float=None) -> tuple[NDArray, NDArray, NDArray, NDArray]:
+def use_narma_input_array(use_database: bool, model: Literal["narma2", "narma10"], steps: int=None, input_range_bot: float=None, input_range_top: float=None) -> NDArray:
     """
     NARMAデータセットを使う
 
@@ -48,7 +48,7 @@ def generate_narma10(u: NDArray[np.float64], steps: int) -> NDArray[np.float64]:
     return y
 
 
-def generate_narma_dataset(model: Literal["narma2", "narma10"], steps: int, input_range_bot: float, input_range_top: float) -> tuple[NDArray, NDArray, NDArray, NDArray]:
+def generate_narma_dataset(model: Literal["narma2", "narma10"], steps: int, input_range_bot: float, input_range_top: float) -> NDArray:
     """
     NARMAデータセットを作成する
 
