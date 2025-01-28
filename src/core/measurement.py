@@ -17,7 +17,7 @@ from ..narma.model import use_narma_input_array
 # 定数の分離
 class Constants:
     VISA_DLL_PATH = r'C:\WINDOWS\system32\visa64.dll'
-    GPIB_ADDRESS = 'GPIB1::1::INSTR'
+    GPIB_ADDRESS = 'GPIB0::1::INSTR'
     INTERVAL_TIME = 0.041463354054055365
 
 # 測定タイプの列挙
@@ -198,7 +198,7 @@ def measure(measure_model: MeasureModelTemplete, dev: any) -> TwoTerminalOutput:
 
     start_perfcounter = time.perf_counter()
     target_time = 0.0
-    for voltage in measure_model.input_V_list:
+    for i, voltage in enumerate(measure_model.input_V_list):
         while True:
             elapsed_time = time.perf_counter() - start_perfcounter
 
@@ -215,9 +215,11 @@ def measure(measure_model: MeasureModelTemplete, dev: any) -> TwoTerminalOutput:
                 V_=float(V[3:-2])
                 V_list.append(V_)
                 target_time += measure_model.tick
+                if i % 100 == 0:
+                    graph(time_list, V_list, A_list)
+
                 break
         
-        graph(time_list, V_list, A_list)
 
     output_data = TwoTerminalOutput(voltage=V_list, current=A_list, time=time_list)
 
