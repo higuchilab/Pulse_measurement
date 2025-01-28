@@ -14,7 +14,7 @@ if project_root not in sys.path:
 
 from src.gui.widgets import common_input_form, TabNarma, TabPulse, TabSweep, Statusbar, Sidebar, HistoryWindow
 
-from src.core.database import create_users_table, append_record_users, refer_users_table, create_materials_table, append_record_materials, refer_materials_table, create_samples_table, append_record_samples, refer_samples_table, create_pulse_templetes_table, create_sweep_templetes_table, create_measures_types_table, create_history_table, append_record_measure_types, fetch_measure_type_index, create_two_terminal_results_table
+from src.database import create_users_table, append_record_users, refer_users_table, create_materials_table, append_record_materials, refer_materials_table, create_samples_table, append_record_samples, refer_samples_table, create_pulse_templetes_table, create_sweep_templetes_table, create_measures_types_table, create_history_table, append_record_measure_types, fetch_measure_type_index, create_two_terminal_results_table
 
 from src.core import narma_run, CommonParameters, PulseParameters, SweepParam, NarmaParam, pulse_run, sweep_run
 
@@ -64,6 +64,7 @@ class NarmaExecutionStrategy:
     def execute(self, parameters: NarmaParam, common_param: CommonParameters) -> None:
         thread = Thread(target=narma_run, args=(parameters, common_param))
         thread.start()
+
 
 class PulseExecutionStrategy:
     def __init__(self, tab_instance: TabPulse, status_bar: Statusbar):

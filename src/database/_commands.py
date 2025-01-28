@@ -2,7 +2,7 @@ import sqlite3
 from typing import Any
 from contextlib import contextmanager
 
-from ..data_processing import PulseBlockParam, SweepParam
+from ..core.data_processing import PulseBlockParam, SweepParam
 
 # 共通のデータベース設定を定数として定義
 DATABASE_NAME = "example.db"

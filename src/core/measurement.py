@@ -10,7 +10,7 @@ from .data_processing import TwoTerminalOutput, NarmaParam, SweepParam, CommonPa
 from .measurement_model import MeasureBlocks, PulseModel, MeasureModelTemplete, SweepModel
 from ..utils import plot_data
 from .device_control import write_command, prepare_device, device_connection
-from .database import append_two_terminal_results, append_record_history
+from ..database import append_two_terminal_results, append_record_history
 
 from ..narma.model import use_narma_input_array
 
