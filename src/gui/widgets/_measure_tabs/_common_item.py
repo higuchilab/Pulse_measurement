@@ -5,7 +5,7 @@ from tkinter import Label, Entry, Frame, Variable, Misc, Toplevel, Button, Strin
 from tkinter.ttk import Combobox, Treeview
 from typing import Dict
 
-from ....core.database import refer_users_table, refer_materials_table, refer_samples_table
+from ....database import refer_users_table, refer_materials_table, refer_samples_table
 
 class ComboboxForm(Frame):
     def __init__(

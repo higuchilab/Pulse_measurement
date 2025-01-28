@@ -3,7 +3,7 @@ from tkinter.ttk import Treeview
 
 from ...core.data_processing import ReferHistoryParam
 
-from ...core.database import refer_history_table
+from ...database import refer_history_table
 
 class HistoryWindow(tk.Frame):
     def __init__(self, master):

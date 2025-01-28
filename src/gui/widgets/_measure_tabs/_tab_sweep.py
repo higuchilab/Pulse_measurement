@@ -4,7 +4,7 @@ from typing import Literal
 
 from ._common_item import ParameterInputsForm, TempletesWindow, TextVariables, RadioButtonForm
 from ....core import SweepParam
-from ....core.database import append_record_sweep_templetes, refer_sweep_templetes_table
+from ....database import append_record_sweep_templetes, refer_sweep_templetes_table
 
 
 class TabSweep(Frame):

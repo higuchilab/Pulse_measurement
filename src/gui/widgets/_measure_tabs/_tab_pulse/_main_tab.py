@@ -6,7 +6,7 @@ from ._components import TreeViewBlocks
 from ._sub_tab import WindowSub
 from .._common_item import make_check_buttons, ParameterInputsForm, TextVariables, TempletesWindow
 from .....core import PulseBlockParam, MeasureBlocks
-from .....core.database import append_record_pulse_templetes, refer_pulse_templetes_table
+from .....database import append_record_pulse_templetes, refer_pulse_templetes_table
 
 
 class TabPulse(Frame):

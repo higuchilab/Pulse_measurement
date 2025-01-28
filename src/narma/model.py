@@ -2,7 +2,7 @@ import numpy as np
 from typing import Literal
 from numpy.typing import NDArray
 
-from ..core.database import append_record_narma_templetes, append_narma_input_array
+from ..database import append_record_narma_templetes, append_narma_input_array
 
 def use_narma_input_array(use_database: bool, model: Literal["narma2", "narma10"], steps: int=None, input_range_bot: float=None, input_range_top: float=None) -> NDArray:
     """
