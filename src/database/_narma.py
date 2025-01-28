@@ -12,6 +12,7 @@ def create_narma_templetes_table():
             bottom_voltage REAL NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             UNIQUE (tot_discrete_time, top_voltage, bottom_voltage)
+        )
     '''
     connect_database(sql)
 
@@ -21,7 +22,7 @@ def append_record_narma_templetes(param: tuple):
     narma_templetesテーブルにデータを挿入する
     """
     sql = '''
-        INSERT OR IGNORE INTO pulse_templetes (tot_discrete_time, top_voltage, bottom_voltage) VALUES (?, ?, ?)
+        INSERT OR IGNORE INTO narma_templetes (tot_discrete_time, top_voltage, bottom_voltage) VALUES (?, ?, ?)
     '''
     return connect_database_and_get_primary_key(sql, param)
 
@@ -38,6 +39,7 @@ def create_narma_input_array():
             input_voltage REAL NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (narma_templete_id) REFERENCES narma_templetes(id)
+        )
     '''
     connect_database(sql)
 
