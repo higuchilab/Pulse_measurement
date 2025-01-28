@@ -65,6 +65,7 @@ class NarmaExecutionStrategy:
         thread = Thread(target=narma_run, args=(parameters, common_param))
         thread.start()
 
+
 class PulseExecutionStrategy:
     def __init__(self, tab_instance: TabPulse, status_bar: Statusbar):
         self.tab = tab_instance

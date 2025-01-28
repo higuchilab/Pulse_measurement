@@ -1,7 +1,7 @@
 import sqlite3
 from typing import Any, Literal, Optional, Sequence, TypedDict
 
-from ..data_processing import HistoryParam, ReferHistoryParam
+from ..core.data_processing import HistoryParam, ReferHistoryParam
 from ._commands import connect_database, connect_database_and_get_primary_key, fetch_unique_data, fetch_all_data_record
 
 def create_measures_types_table():
