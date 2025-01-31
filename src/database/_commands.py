@@ -129,6 +129,24 @@ def fetch_all_data_column(sql: str, param: tuple=()) -> list[list[Any]]:
     return result_list
 
 
+def initialize_db() -> None:
+    """
+    schemaを用いてデータベースを初期化
+    """
+    # データベースに接続
+    with sqlite3.connect("example.db") as conn:
+        
+        cursor = conn.cursor()
+
+        # schema.sqlファイルの内容を実行
+        with open('schema.sql', 'r') as schema_file:
+            schema_sql = schema_file.read()
+            cursor.executescript(schema_sql)
+
+        # 変更をコミットして接続を閉じる
+        conn.commit()
+
+
 def create_users_table():
     sql = '''
         CREATE TABLE IF NOT EXISTS users (
