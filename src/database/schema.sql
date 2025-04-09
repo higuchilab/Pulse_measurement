@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS narma_templetes (
     bottom_voltage REAL NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (tot_discrete_time, top_voltage, bottom_voltage)
-)
+);
 
 CREATE TABLE IF NOT EXISTS narma_input_array (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -98,4 +98,4 @@ CREATE TABLE IF NOT EXISTS narma_input_array (
     input_voltage REAL NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (narma_templete_id) REFERENCES narma_templetes(id)
-)
+);

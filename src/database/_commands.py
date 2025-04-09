@@ -139,7 +139,7 @@ def initialize_db() -> None:
         cursor = conn.cursor()
 
         # schema.sqlファイルの内容を実行
-        with open('schema.sql', 'r') as schema_file:
+        with open('database/schema.sql', 'r') as schema_file:
             schema_sql = schema_file.read()
             cursor.executescript(schema_sql)
 
