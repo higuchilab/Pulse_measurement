@@ -219,15 +219,15 @@ class MeasureWindow(tk.Frame):
         strategy.execute(parameters, common_param)
 
 
-if __name__ == "__main__":
-    initialize_db()
-    append_record_measure_types("NARMA")
-    append_record_measure_types("2-terminal I-Vsweep")
-    append_record_measure_types("2-terminal Pulse")
-    root = tk.Tk()
-    # root.geometry("530x300")
-    # root.resizable(False, False)#ウィンドウサイズをフリーズ
-    root.lift()#最前面に表示
-    app = Application(master=root)
-    app.mainloop()
+# if __name__ == "__main__":
+#     initialize_db()
+#     append_record_measure_types("NARMA")
+#     append_record_measure_types("2-terminal I-Vsweep")
+#     append_record_measure_types("2-terminal Pulse")
+#     root = tk.Tk()
+#     # root.geometry("530x300")
+#     # root.resizable(False, False)#ウィンドウサイズをフリーズ
+#     root.lift()#最前面に表示
+#     app = Application(master=root)
+#     app.mainloop()
 
