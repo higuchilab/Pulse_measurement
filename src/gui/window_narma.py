@@ -1,12 +1,12 @@
 import tkinter as tk
-from threading import Thread
+# from threading import Thread
 from tkinter import messagebox, filedialog
 from tkinter.ttk import Notebook
 import sys
 from pathlib import Path
-from abc import ABC, abstractmethod
-from typing import Protocol, Any
-from dataclasses import dataclass
+# from abc import ABC, abstractmethod
+# from typing import Protocol, Any
+# from dataclasses import dataclass
 
 project_root = str(Path(__file__).parent.parent.parent)
 if project_root not in sys.path:
@@ -18,95 +18,98 @@ from src.database import initialize_db, append_record_users, refer_users_table, 
 
 from src.core import narma_run, CommonParameters, PulseParameters, SweepParam, NarmaParam, pulse_run, sweep_run
 
+from src.core.execution_strategies import NarmaExecutionStrategy, PulseExecutionStrategy, SweepExecutionStrategy
+
 from src.utils import timer
 
 
 # 測定実行の戦略インターフェース
-class ExecutionStrategy(Protocol):
-    def get_parameters(self) -> Any:
-        """測定パラメータを取得"""
-        pass
+# class ExecutionStrategy(Protocol):
+#     def get_parameters(self) -> Any:
+#         """測定パラメータを取得"""
+#         pass
 
-    def execute(self, parameters: Any, common_param: CommonParameters) -> None:
-        """測定を実行"""
-        pass
+#     def execute(self, parameters: Any, common_param: CommonParameters) -> None:
+#         """測定を実行"""
+#         pass
 
-    def pre_execute(self) -> None:
-        """実行前の準備（オプション）"""
-        pass
+#     def pre_execute(self) -> None:
+#         """実行前の準備（オプション）"""
+#         pass
 
 # 具体的な実行戦略
-class NarmaExecutionStrategy:
-    def __init__(self, tab_instance: TabNarma, status_bar: Statusbar):
-        self.tab = tab_instance
-        self.status_bar = status_bar
+# class NarmaExecutionStrategy:
+#     def __init__(self, tab_instance: TabNarma, status_bar: Statusbar):
+#         self.tab = tab_instance
+#         self.status_bar = status_bar
 
-    def get_parameters(self) -> NarmaParam:
-        # measure_type_index = fetch_measure_type_index("NARMA")        
-        return NarmaParam(
-            use_database=self.tab.is_use_prepared_array,
-            model=self.tab.narma_model,
-            pulse_width=self.tab.pulse_width,
-            off_width=self.tab.off_width,
-            tick=self.tab.tick,
-            nodes=self.tab.nodes,
-            discrete_time=self.tab.discrete_time,
-            bot_voltage=self.tab.bot_voltage,
-            top_voltage=self.tab.top_voltage,
-            base_voltage=self.tab.base_voltage
-        )
+#     def get_parameters(self) -> NarmaParam:
+#         # measure_type_index = fetch_measure_type_index("NARMA")        
+#         return NarmaParam(
+#             use_database=self.tab.is_use_prepared_array,
+#             model=self.tab.narma_model,
+#             pulse_width=self.tab.pulse_width,
+#             off_width=self.tab.off_width,
+#             tick=self.tab.tick,
+#             nodes=self.tab.nodes,
+#             discrete_time=self.tab.discrete_time,
+#             bot_voltage=self.tab.bot_voltage,
+#             top_voltage=self.tab.top_voltage,
+#             base_voltage=self.tab.base_voltage
+#         )
     
-    def pre_execute(self) -> None:
-        tot_time = (self.tab.pulse_width + self.tab.off_width) * self.tab.discrete_time
-        timer_thread = Thread(target=timer, args=(tot_time, self.status_bar))
-        timer_thread.start()
+#     def pre_execute(self) -> None:
+#         tot_time = (self.tab.pulse_width + self.tab.off_width) * self.tab.discrete_time
+#         timer_thread = Thread(target=timer, args=(tot_time, self.status_bar))
+#         timer_thread.start()
 
-    def execute(self, parameters: NarmaParam, common_param: CommonParameters) -> None:
-        thread = Thread(target=narma_run, args=(parameters, common_param))
-        thread.start()
+#     def execute(self, parameters: NarmaParam, common_param: CommonParameters) -> None:
+#         thread = Thread(target=narma_run, args=(parameters, common_param))
+#         thread.start()
 
 
-class PulseExecutionStrategy:
-    def __init__(self, tab_instance: TabPulse, status_bar: Statusbar):
-        self.tab = tab_instance
-        self.status_bar = status_bar
+# class PulseExecutionStrategy:
+#     def __init__(self, tab_instance: TabPulse, status_bar: Statusbar):
+#         self.tab = tab_instance
+#         self.status_bar = status_bar
 
-    def get_parameters(self) -> PulseParameters:
-            # measure_type_index = fetch_measure_type_index(2-terminal Pulse")        
-        return {
-            'measure_blocks': self.tab.pulse_blocks
-        }
+#     def get_parameters(self) -> PulseParameters:
+#             # measure_type_index = fetch_measure_type_index(2-terminal Pulse")        
+#         return {
+#             'measure_blocks': self.tab.pulse_blocks
+#         }
 
-    def pre_execute(self) -> None:
-        standarded_pulse_blocks = self.tab.pulse_blocks.export_standarded_blocks()
-        tot_time = sum((block.top_time + block.base_time) * block.loop + block.interval 
-                      for block in standarded_pulse_blocks)
+#     def pre_execute(self) -> None:
+#         standarded_pulse_blocks = self.tab.pulse_blocks.export_standarded_blocks()
+#         tot_time = sum((block.top_time + block.base_time) * block.loop + block.interval 
+#                       for block in standarded_pulse_blocks)
         
-        timer_thread = Thread(target=timer, args=(tot_time, self.status_bar))
-        timer_thread.start()
+#         timer_thread = Thread(target=timer, args=(tot_time, self.status_bar))
+#         timer_thread.start()
 
-    def execute(self, parameters: PulseParameters, common_param: CommonParameters) -> None:
-        thread = Thread(target=pulse_run, args=(parameters, common_param))
-        thread.start()
+#     def execute(self, parameters: PulseParameters, common_param: CommonParameters) -> None:
+#         thread = Thread(target=pulse_run, args=(parameters, common_param))
+#         thread.start()
 
-class SweepExecutionStrategy:
-    def __init__(self, tab_instance: TabSweep):
-        self.tab = tab_instance
 
-    def get_parameters(self) -> SweepParam:
-            # measure_type_index = fetch_measure_type_index("2-terminal I-Vsweep")        
-        return SweepParam(
-            mode=self.tab.sweep_mode,
-            top_voltage=self.tab.top_voltage,
-            bottom_voltage=self.tab.bottom_voltage,
-            voltage_step=self.tab.voltage_step,
-            loop=self.tab.loop,
-            tick_time=self.tab.tick
-        )
+# class SweepExecutionStrategy:
+#     def __init__(self, tab_instance: TabSweep):
+#         self.tab = tab_instance
 
-    def execute(self, parameters: SweepParam, common_param: CommonParameters) -> None:
-        thread = Thread(target=sweep_run, args=(parameters, common_param))
-        thread.start()
+#     def get_parameters(self) -> SweepParam:
+#             # measure_type_index = fetch_measure_type_index("2-terminal I-Vsweep")        
+#         return SweepParam(
+#             mode=self.tab.sweep_mode,
+#             top_voltage=self.tab.top_voltage,
+#             bottom_voltage=self.tab.bottom_voltage,
+#             voltage_step=self.tab.voltage_step,
+#             loop=self.tab.loop,
+#             tick_time=self.tab.tick
+#         )
+
+#     def execute(self, parameters: SweepParam, common_param: CommonParameters) -> None:
+#         thread = Thread(target=sweep_run, args=(parameters, common_param))
+#         thread.start()
 
 
 class Application(tk.Frame):
@@ -211,8 +214,8 @@ class MeasureWindow(tk.Frame):
         strategy = self.execution_strategies[selected_tab]()
         
         # 実行前の準備（必要な場合）
-        if hasattr(strategy, 'pre_execute'):
-            strategy.pre_execute()
+        # if hasattr(strategy, 'pre_execute'):
+        #     strategy.pre_execute()
 
         # パラメータの取得と実行
         parameters = strategy.get_parameters()
