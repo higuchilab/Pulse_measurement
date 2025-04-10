@@ -6,7 +6,7 @@ from src.core.measurement import CommonParameters
 from src.core.measurement import PulseParameters
 from src.utils import timer
 
-from _interface import ExecutionStrategy
+from src.core.execution_strategies._base import ExecutionStrategy
 
 
 class PulseExecutionStrategy(ExecutionStrategy):

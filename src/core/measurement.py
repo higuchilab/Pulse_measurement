@@ -12,7 +12,12 @@ from ..utils import plot_data
 from .device_control import write_command, prepare_device, device_connection
 from ..database import append_two_terminal_results, append_record_history
 
-from ..narma.model import use_narma_input_array
+from .measurement_strategies import (
+    MeasurementStrategy, PulseMeasurementStrategy,
+    SweepMeasurementStrategy, NarmaMeasurementStrategy,
+    PulseParameters
+)
+
 
 # 定数の分離
 class Constants:
@@ -31,95 +36,6 @@ def stop_func(statusbar: Any) -> None:
     """測定を中断し、ステータスバーに表示します。"""
     statusbar.swrite("測定中断")
 
-
-class PulseParameters(TypedDict):
-    measure_blocks: MeasureBlocks
-
-# 測定戦略のインターフェース
-class MeasurementStrategy(Protocol):
-    def create_measure_model(self) -> MeasureModelTemplete:
-        """測定モデルを作成"""
-        pass
-
-    def get_measurement_type(self) -> str:
-        """測定タイプを取得"""
-        pass
-
-    def post_process(self, output: TwoTerminalOutput) -> None:
-        """測定後の追加処理"""
-        pass
-
-# 具体的な測定戦略の実装
-class PulseMeasurementStrategy:
-    def __init__(self, params: PulseParameters):
-        self.parameters = params
-
-    def create_measure_model(self) -> MeasureModelTemplete:
-        return PulseModel(self.parameters["measure_blocks"])
-
-    def get_measurement_type(self) -> str:
-        return MeasurementType.PULSE.value
-
-    def post_process(self, output: TwoTerminalOutput) -> None:
-        plot_data(output)
-
-
-class SweepMeasurementStrategy:
-    def __init__(self, params: SweepParam):
-        self.parameters = params
-
-    def create_measure_model(self) -> MeasureModelTemplete:
-        return SweepModel(self.parameters)
-    
-    def get_measurement_type(self) -> str:
-        return MeasurementType.SWEEP.value
-    
-    def post_process(self, output: TwoTerminalOutput) -> None:
-        plot_data(output)
-
-
-class NarmaMeasurementStrategy:
-    def __init__(self, params: NarmaParam):
-        self.parameters = params
-        self.input_value = None
-        self.correct_value = None
-        self._prepare_dataset()
-
-    def _prepare_dataset(self):
-        self.input_value = use_narma_input_array(
-            use_database=self.parameters.use_database,
-            model=self.parameters.model,
-            steps=self.parameters.discrete_time,
-            input_range_bot=self.parameters.bot_voltage,
-            input_range_top=self.parameters.top_voltage
-        )
-
-    def create_measure_model(self) -> MeasureModelTemplete:
-        new_pulse_blocks = MeasureBlocks()
-        new_pulse_model = PulseModel(new_pulse_blocks)
-        new_pulse_model.make_model_from_narma_input_array(
-            pulse_width=self.parameters.pulse_width,
-            off_width=self.parameters.off_width,
-            tick=self.parameters.tick,
-            base_voltage=self.parameters.base_voltage,
-            input_array=self.input_value
-        )
-        return new_pulse_model
-        # return PulseModel.make_model_from_narma_input_array(
-        #     pulse_width=self.parameters.pulse_width,
-        #     off_width=self.parameters.off_width,
-        #     tick=self.parameters.tick,
-        #     base_voltage=self.parameters.base_voltage,
-        #     input_array=self.x_test
-        # )
-
-
-    def get_measurement_type(self) -> str:
-        return MeasurementType.NARMA.value
-
-    def post_process(self, output: TwoTerminalOutput) -> None:
-        plot_data(output)
-        # NARMA特有の後処理があれば実装
 
 # メイン測定クラス
 class MeasurementExecutor:
