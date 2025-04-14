@@ -4,7 +4,7 @@ from src.core import sweep_run
 from src.core.measurement import CommonParameters
 from src.core.measurement import SweepParam
 
-from _interface import ExecutionStrategy
+from src.core.execution_strategies._base import ExecutionStrategy
 
 class SweepExecutionStrategy(ExecutionStrategy):
     def __init__(self, tab_instance: TabSweep):

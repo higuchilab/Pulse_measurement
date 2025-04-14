@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Literal
 from numpy.typing import NDArray
+from pydantic import BaseModel, Field
 
 from openpyxl import Workbook, load_workbook
 
@@ -38,8 +39,16 @@ class Datas():
         wb.save(filepath)
         wb.close()
 
-@dataclass
-class CommonParameters:
+# @dataclass
+# class CommonParameters:
+#     operator: str
+#     material: str
+#     sample_name: str
+#     option: str
+#     file_path: str
+
+
+class CommonParameters(BaseModel):
     operator: str
     material: str
     sample_name: str
@@ -54,8 +63,29 @@ class TwoTerminalOutput:
     time: NDArray
 
 
-@dataclass
-class PulseBlockParam:
+class EchoStateOutput(BaseModel):
+    """
+    Output data for Echo State Network
+    """
+    voltage: NDArray
+    current: NDArray
+    time: NDArray
+    descrete_time: NDArray
+    internal_loop: NDArray
+    external_loop: NDArray
+
+
+# @dataclass
+# class PulseBlockParam:
+#     top_voltage: float
+#     top_time: float
+#     base_voltage: float
+#     base_time: float
+#     loop: int
+#     interval_time: float
+
+
+class PulseBlockParam(BaseModel):
     top_voltage: float
     top_time: float
     base_voltage: float
@@ -64,8 +94,16 @@ class PulseBlockParam:
     interval_time: float
 
 
-@dataclass
-class SweepParam:
+# @dataclass
+# class SweepParam:
+#     mode: Literal["one_way", "round_trip", "bidirection"]
+#     top_voltage: float
+#     bottom_voltage: float
+#     voltage_step: float
+#     loop: int
+#     tick_time: float
+
+class SweepParam(BaseModel):
     mode: Literal["one_way", "round_trip", "bidirection"]
     top_voltage: float
     bottom_voltage: float
@@ -74,8 +112,21 @@ class SweepParam:
     tick_time: float
 
 
-@dataclass
-class NarmaParam:
+# @dataclass
+# class NarmaParam:
+#     use_database: bool
+#     model: str
+#     pulse_width: float
+#     off_width: float
+#     tick: float
+#     nodes: int
+#     discrete_time: int
+#     bot_voltage: float
+#     top_voltage: float
+#     base_voltage: float
+
+
+class NarmaParam(BaseModel):
     use_database: bool
     model: str
     pulse_width: float
@@ -88,17 +139,31 @@ class NarmaParam:
     base_voltage: float
 
 
-@dataclass
-class HistoryParam:
+# @dataclass
+# class HistoryParam:
+#     user_name: str
+#     sample_name: str
+#     measure_type: str
+#     option: str
+
+
+class HistoryParam(BaseModel):
     user_name: str
     sample_name: str
     measure_type: str
     option: str
 
 
-@dataclass
-class ReferHistoryParam:
-    operator: str = ""
-    material: str = ""
-    sample: str = ""
-    measure_type: str = ""
+# @dataclass
+# class ReferHistoryParam:
+#     operator: str = ""
+#     material: str = ""
+#     sample: str = ""
+#     measure_type: str = ""
+
+
+class ReferHistoryParam(BaseModel):
+    operator: str = Field(default="")
+    material: str = Field(default="")
+    sample: str = Field(default="")
+    measure_type: str = Field(default="")

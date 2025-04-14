@@ -6,7 +6,7 @@ from src.core.measurement import CommonParameters
 from src.core.measurement import NarmaParam
 from src.utils import timer
 
-from _interface import ExecutionStrategy
+from src.core.execution_strategies._base import ExecutionStrategy
 
 class NarmaExecutionStrategy(ExecutionStrategy):
     def __init__(self, tab_instance: TabNarma, status_bar: Statusbar):

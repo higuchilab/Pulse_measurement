@@ -1,6 +1,6 @@
-from .sweep_execution_strategy import SweepExecutionStrategy
-from .pulse_execution_strategy import PulseExecutionStrategy
-from .narma_execution_strategy import NarmaExecutionStrategy
+from ._sweep_strategy import SweepExecutionStrategy
+from ._pulse_strategy import PulseExecutionStrategy
+from ._narma_strategy import NarmaExecutionStrategy
 
 __all__ = [
     "SweepExecutionStrategy",

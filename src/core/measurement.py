@@ -6,13 +6,18 @@ from enum import Enum, auto
 from openpyxl import Workbook, load_workbook
 
 from ..visualization import graph
-from .data_processing import TwoTerminalOutput, NarmaParam, SweepParam, CommonParameters, HistoryParam
+from .data_processing import TwoTerminalOutput, EchoStateOutput, NarmaParam, SweepParam, CommonParameters, HistoryParam
 from .measurement_model import MeasureBlocks, PulseModel, MeasureModelTemplete, SweepModel
 from ..utils import plot_data
 from .device_control import write_command, prepare_device, device_connection
 from ..database import append_two_terminal_results, append_record_history
 
-from ..narma.model import use_narma_input_array
+from .measurement_strategies import (
+    MeasurementStrategy, PulseMeasurementStrategy,
+    SweepMeasurementStrategy, NarmaMeasurementStrategy,
+    PulseParameters
+)
+
 
 # 定数の分離
 class Constants:
@@ -31,95 +36,6 @@ def stop_func(statusbar: Any) -> None:
     """測定を中断し、ステータスバーに表示します。"""
     statusbar.swrite("測定中断")
 
-
-class PulseParameters(TypedDict):
-    measure_blocks: MeasureBlocks
-
-# 測定戦略のインターフェース
-class MeasurementStrategy(Protocol):
-    def create_measure_model(self) -> MeasureModelTemplete:
-        """測定モデルを作成"""
-        pass
-
-    def get_measurement_type(self) -> str:
-        """測定タイプを取得"""
-        pass
-
-    def post_process(self, output: TwoTerminalOutput) -> None:
-        """測定後の追加処理"""
-        pass
-
-# 具体的な測定戦略の実装
-class PulseMeasurementStrategy:
-    def __init__(self, params: PulseParameters):
-        self.parameters = params
-
-    def create_measure_model(self) -> MeasureModelTemplete:
-        return PulseModel(self.parameters["measure_blocks"])
-
-    def get_measurement_type(self) -> str:
-        return MeasurementType.PULSE.value
-
-    def post_process(self, output: TwoTerminalOutput) -> None:
-        plot_data(output)
-
-
-class SweepMeasurementStrategy:
-    def __init__(self, params: SweepParam):
-        self.parameters = params
-
-    def create_measure_model(self) -> MeasureModelTemplete:
-        return SweepModel(self.parameters)
-    
-    def get_measurement_type(self) -> str:
-        return MeasurementType.SWEEP.value
-    
-    def post_process(self, output: TwoTerminalOutput) -> None:
-        plot_data(output)
-
-
-class NarmaMeasurementStrategy:
-    def __init__(self, params: NarmaParam):
-        self.parameters = params
-        self.input_value = None
-        self.correct_value = None
-        self._prepare_dataset()
-
-    def _prepare_dataset(self):
-        self.input_value = use_narma_input_array(
-            use_database=self.parameters.use_database,
-            model=self.parameters.model,
-            steps=self.parameters.discrete_time,
-            input_range_bot=self.parameters.bot_voltage,
-            input_range_top=self.parameters.top_voltage
-        )
-
-    def create_measure_model(self) -> MeasureModelTemplete:
-        new_pulse_blocks = MeasureBlocks()
-        new_pulse_model = PulseModel(new_pulse_blocks)
-        new_pulse_model.make_model_from_narma_input_array(
-            pulse_width=self.parameters.pulse_width,
-            off_width=self.parameters.off_width,
-            tick=self.parameters.tick,
-            base_voltage=self.parameters.base_voltage,
-            input_array=self.input_value
-        )
-        return new_pulse_model
-        # return PulseModel.make_model_from_narma_input_array(
-        #     pulse_width=self.parameters.pulse_width,
-        #     off_width=self.parameters.off_width,
-        #     tick=self.parameters.tick,
-        #     base_voltage=self.parameters.base_voltage,
-        #     input_array=self.x_test
-        # )
-
-
-    def get_measurement_type(self) -> str:
-        return MeasurementType.NARMA.value
-
-    def post_process(self, output: TwoTerminalOutput) -> None:
-        plot_data(output)
-        # NARMA特有の後処理があれば実装
 
 # メイン測定クラス
 class MeasurementExecutor:
@@ -222,6 +138,61 @@ def measure(measure_model: MeasureModelTemplete, dev: any) -> TwoTerminalOutput:
         
 
     output_data = TwoTerminalOutput(voltage=V_list, current=A_list, time=time_list)
+
+    return output_data
+
+def echo_state_measure(
+    measure_model: MeasureModelTemplete, dev: any
+) -> EchoStateOutput:
+    """
+    入力信号同期を判定するための測定を行う関数
+    Args:
+        measure_model (MeasureModelTemplete): 測定モデル
+        dev (any): デバイスオブジェクト
+    Returns:
+        EchoStateOutput: 測定結果を格納したデータクラス
+    """
+    V_list = []
+    A_list = []
+    time_list = []
+    descrete_time_list = []
+    internal_loop_list = []
+    external_loop_list = []
+
+    start_perfcounter = time.perf_counter()
+    target_time = 0.0
+    for i, voltage in enumerate(measure_model.input_V_list):
+        while True:
+            elapsed_time = time.perf_counter() - start_perfcounter
+
+            if elapsed_time >= target_time:
+                dev.write(f"SOV{voltage}")
+                dev.write("*TRG")
+                time_list.append(time.perf_counter() - start_perfcounter)
+                
+                A=dev.query("N?")
+                A_=float(A[3:-2])
+                A_list.append(A_)
+                
+                V=dev.query("SOV?")
+                V_=float(V[3:-2])
+                V_list.append(V_)
+                
+                descrete_time_list.append(i)
+                internal_loop_list.append(measure_model.internal_loop)
+                external_loop_list.append(measure_model.external_loop)
+                
+                target_time += measure_model.tick
+                break
+
+    output_data = EchoStateOutput(
+        voltage=V_list,
+        current=A_list,
+        time=time_list,
+        descrete_time=descrete_time_list,
+        internal_loop=internal_loop_list,
+        external_loop=external_loop_list
+    )
 
     return output_data
 

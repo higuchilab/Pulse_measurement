@@ -3,154 +3,199 @@ from numpy.typing import NDArray
 from operator import attrgetter
 from abc import ABCMeta, abstractmethod
 from typing import List
+from pydantic import BaseModel, Field
 
 from .data_processing import SweepParam
 
-class MeasureBlock():
-    def __init__(self, loop: int, V_top: float, V_base: float, top_time: float, base_time: float, interval: float):     
-        self.__loop = loop
-        self.__V_top = V_top
-        self.__V_base = V_base
-        self.__top_time = top_time
-        self.__base_time = base_time
-        self.__interval = interval
 
-    @property
-    def loop(self):
-        return self.__loop
-
-    @loop.setter
-    def loop(self, value):
-        if not isinstance(value, int):
-            raise ValueError("loop must be an integer")
-        self.__loop = value
-
-    @property
-    def V_top(self):
-        return self.__V_top
-
-    @V_top.setter
-    def V_top(self, value):
-        if not isinstance(value, float):
-            raise ValueError("V_top must be a float")
-        self.__V_top = value
-
-    @property
-    def V_base(self):
-        return self.__V_base
-
-    @V_base.setter
-    def V_base(self, value):
-        if not isinstance(value, float):
-            raise ValueError("V_base must be a float")
-        self.__V_base = value
-
-    @property
-    def top_time(self):
-        return self.__top_time
-
-    @top_time.setter
-    def top_time(self, value):
-        if not isinstance(value, float):
-            raise ValueError("top_time must be a float")
-        self.__top_time = value
-
-    @property
-    def base_time(self):
-        return self.__base_time
-
-    @base_time.setter
-    def base_time(self, value):
-        if not isinstance(value, float):
-            raise ValueError("base_time must be a float")
-        self.__base_time = value
-
-    @property
-    def interval(self):
-        return self.__interval
-
-    @interval.setter
-    def interval(self, value):
-        if not isinstance(value, float):
-            raise ValueError("interval must be a float")
-        self.__interval = value
+class MeasureBlock(BaseModel):
+    loop: int = Field(default=5, ge=1)
+    V_top: float = Field(default=1.0)
+    V_base: float = Field(default=0.0)
+    top_time: float = Field(default=10.0, gt=0)
+    base_time: float = Field(default=10.0, gt=0)
+    interval: float = Field(default=10.0)
 
 
-class Cycle():
-    def __init__(self):
-        self.__start_index = 0
-        self.__stop_index = 0
-        self.__loop = 2
+# class MeasureBlock():
+#     def __init__(self, loop: int, V_top: float, V_base: float, top_time: float, base_time: float, interval: float):     
+#         self.__loop = loop
+#         self.__V_top = V_top
+#         self.__V_base = V_base
+#         self.__top_time = top_time
+#         self.__base_time = base_time
+#         self.__interval = interval
 
-    @property
-    def start_index(self):
-        return self.__start_index
+#     @property
+#     def loop(self):
+#         return self.__loop
 
-    @start_index.setter
-    def start_index(self, value):
-        if not isinstance(value, int):
-            raise ValueError("start_index must be an integer")
-        self.__start_index = value
+#     @loop.setter
+#     def loop(self, value):
+#         if not isinstance(value, int):
+#             raise ValueError("loop must be an integer")
+#         self.__loop = value
+
+#     @property
+#     def V_top(self):
+#         return self.__V_top
+
+#     @V_top.setter
+#     def V_top(self, value):
+#         if not isinstance(value, float):
+#             raise ValueError("V_top must be a float")
+#         self.__V_top = value
+
+#     @property
+#     def V_base(self):
+#         return self.__V_base
+
+#     @V_base.setter
+#     def V_base(self, value):
+#         if not isinstance(value, float):
+#             raise ValueError("V_base must be a float")
+#         self.__V_base = value
+
+#     @property
+#     def top_time(self):
+#         return self.__top_time
+
+#     @top_time.setter
+#     def top_time(self, value):
+#         if not isinstance(value, float):
+#             raise ValueError("top_time must be a float")
+#         self.__top_time = value
+
+#     @property
+#     def base_time(self):
+#         return self.__base_time
+
+#     @base_time.setter
+#     def base_time(self, value):
+#         if not isinstance(value, float):
+#             raise ValueError("base_time must be a float")
+#         self.__base_time = value
+
+#     @property
+#     def interval(self):
+#         return self.__interval
+
+#     @interval.setter
+#     def interval(self, value):
+#         if not isinstance(value, float):
+#             raise ValueError("interval must be a float")
+#         self.__interval = value
+
+
+class Cycle(BaseModel):
+    start_index: int = Field(default=0, ge=0)
+    stop_index: int = Field(default=0, gt=0)
+    loop: int = Field(default=2, ge=2)
+
+    # class Config:
+    #     schema_extra = {
+    #         "example": {
+    #             "start_index": 0,
+    #             "stop_index": 0,
+    #             "loop": 2
+    #         }
+    #     }
+
+# class Cycle():
+#     def __init__(self):
+#         self.__start_index = 0
+#         self.__stop_index = 0
+#         self.__loop = 2
+
+#     @property
+#     def start_index(self):
+#         return self.__start_index
+
+#     @start_index.setter
+#     def start_index(self, value):
+#         if not isinstance(value, int):
+#             raise ValueError("start_index must be an integer")
+#         self.__start_index = value
     
-    @property
-    def stop_index(self):
-        return self.__stop_index
+#     @property
+#     def stop_index(self):
+#         return self.__stop_index
 
-    @stop_index.setter
-    def stop_index(self, value):
-        if not isinstance(value, int):
-            raise ValueError("stop_index must be an integer")
-        self.__stop_index = value
+#     @stop_index.setter
+#     def stop_index(self, value):
+#         if not isinstance(value, int):
+#             raise ValueError("stop_index must be an integer")
+#         self.__stop_index = value
 
-    @property
-    def loop(self):
-        return self.__loop
+#     @property
+#     def loop(self):
+#         return self.__loop
 
-    @loop.setter
-    def loop(self, value):
-        if not isinstance(value, int):
-            raise ValueError("loop must be an integer")
+#     @loop.setter
+#     def loop(self, value):
+#         if not isinstance(value, int):
+#             raise ValueError("loop must be an integer")
         
-        if value < 2:
-            raise ValueError("loop must be more than '1'")
-        self.__loop = value
+#         if value < 2:
+#             raise ValueError("loop must be more than '1'")
+#         self.__loop = value
+
+class MeasureBlocks(BaseModel):
+    blocks: List[MeasureBlock] = Field(default_factory=list)
+    cycles: List[Cycle] = Field(default_factory=list)
 
 
-class MeasureBlocks():
-    def __init__(self):
-        self.__blocks = []
-        self.__cycles = []
-        # self.append_new_block()
+# class MeasureBlocks():
+#     def __init__(self):
+#         self.__blocks = []
+#         self.__cycles = []
+#         # self.append_new_block()
 
-    @property
-    def blocks(self) -> List[MeasureBlock]:
-        return self.__blocks
+#     @property
+#     def blocks(self) -> List[MeasureBlock]:
+#         return self.__blocks
     
-    @blocks.setter
-    def blocks(self, value):
-        if not isinstance(value, List):
-            raise ValueError("blocks must be 'List'")
-        self.__blocks = value
+#     @blocks.setter
+#     def blocks(self, value):
+#         if not isinstance(value, List):
+#             raise ValueError("blocks must be 'List'")
+#         self.__blocks = value
     
-    @property
-    def cycles(self) -> List[Cycle]:
-        return self.__cycles
+#     @property
+#     def cycles(self) -> List[Cycle]:
+#         return self.__cycles
     
-    @cycles.setter
-    def cycles(self, value):
-        if not isinstance(value, List):
-            raise ValueError("cycles must be 'List")
-        self.__cycles = value
+#     @cycles.setter
+#     def cycles(self, value):
+#         if not isinstance(value, List):
+#             raise ValueError("cycles must be 'List")
+#         self.__cycles = value
 
-    def append_new_block(self, *arg, loop: int=5, V_top: float=1.0, V_base: float=0.0, top_time: float=10.0, base_time: float=10.0, interval: float=10.0):
-        new_block = MeasureBlock(loop, V_top, V_base, top_time, base_time, interval)
-        self.__blocks.append(new_block)
+    def append_new_block(
+            self,
+            *arg,
+            loop: int=5, 
+            V_top: float=1.0, 
+            V_base: float=0.0, 
+            top_time: float=10.0, 
+            base_time: float=10.0, 
+            interval: float=10.0
+    ) -> None:
+        new_block = MeasureBlock(
+            loop, 
+            V_top, 
+            V_base, 
+            top_time, 
+            base_time, 
+            interval
+        )
+        self.blocks.append(new_block)
 
     def change_position_block(self, changed_item_index: int, target_index: int) -> None:
-        self.__blocks.insert(target_index, self.__blocks.pop(changed_item_index))
+        self.blocks.insert(target_index, self.blocks.pop(changed_item_index))
 
     def del_block(self, *arg, index):
-        self.__blocks.pop(index)
+        self.blocks.pop(index)
 
     def append_new_cycle(self, *arg):
         new_cycle = Cycle()
@@ -252,7 +297,8 @@ class PulseModel(MeasureModelTemplete):
                 V_base=base_voltage,
                 top_time=pulse_width,
                 base_time=off_width,
-                interval=0.0)
+                interval=0.0
+                )
 
 
 class SweepModel(MeasureModelTemplete):
@@ -286,3 +332,12 @@ class SweepModel(MeasureModelTemplete):
         ndarray_return = np.arange(self.param.bottom_voltage, self.param.voltage_step, self.param.voltage_step)
         return ndarray_go.tolist() + ndarray_back.tolist() + ndarray_return.tolist()
 
+
+class EchoStateModel(MeasureModelTemplete):
+    def __init__(self, tick: float, external_loop: NDArray):
+        super().__init__(tick)
+        self.external_loop = external_loop
+
+    @property
+    def input_V_list(self) -> list:
+        return self.external_loop.tolist()
