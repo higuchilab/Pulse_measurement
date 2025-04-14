@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Literal
+from typing import Literal, Any
 from numpy.typing import NDArray
 from pydantic import BaseModel, Field
 
@@ -67,12 +67,12 @@ class EchoStateOutput(BaseModel):
     """
     Output data for Echo State Network
     """
-    voltage: NDArray
-    current: NDArray
-    time: NDArray
-    descrete_time: NDArray
-    internal_loop: NDArray
-    external_loop: NDArray
+    voltage: Any
+    current: Any
+    time: Any
+    descrete_time: Any
+    internal_loop: Any
+    external_loop: Any
 
 
 # @dataclass

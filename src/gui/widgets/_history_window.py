@@ -34,8 +34,8 @@ class TreeViewHistory(Treeview):
         self.heading("測定名", text="測定名", anchor=tk.CENTER)
         self.heading("備考", text="備考", anchor=tk.CENTER)
 
-        self.load_history(param=ReferHistoryParam)
+        # self.load_history(param=ReferHistoryParam)
     
-    def load_history(self, param: ReferHistoryParam):
-        for row in refer_history_table(param):
-            self.insert("", "end", text="test2", values=row)
+    # def load_history(self, param: ReferHistoryParam):
+    #     for row in refer_history_table(param):
+    #         self.insert("", "end", text="test2", values=row)
