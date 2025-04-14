@@ -6,7 +6,7 @@ from enum import Enum, auto
 from openpyxl import Workbook, load_workbook
 
 from ..visualization import graph
-from .data_processing import TwoTerminalOutput, NarmaParam, SweepParam, CommonParameters, HistoryParam
+from .data_processing import TwoTerminalOutput, EchoStateOutput, NarmaParam, SweepParam, CommonParameters, HistoryParam
 from .measurement_model import MeasureBlocks, PulseModel, MeasureModelTemplete, SweepModel
 from ..utils import plot_data
 from .device_control import write_command, prepare_device, device_connection
@@ -138,6 +138,61 @@ def measure(measure_model: MeasureModelTemplete, dev: any) -> TwoTerminalOutput:
         
 
     output_data = TwoTerminalOutput(voltage=V_list, current=A_list, time=time_list)
+
+    return output_data
+
+def echo_state_measure(
+    measure_model: MeasureModelTemplete, dev: any
+) -> EchoStateOutput:
+    """
+    入力信号同期を判定するための測定を行う関数
+    Args:
+        measure_model (MeasureModelTemplete): 測定モデル
+        dev (any): デバイスオブジェクト
+    Returns:
+        EchoStateOutput: 測定結果を格納したデータクラス
+    """
+    V_list = []
+    A_list = []
+    time_list = []
+    descrete_time_list = []
+    internal_loop_list = []
+    external_loop_list = []
+
+    start_perfcounter = time.perf_counter()
+    target_time = 0.0
+    for i, voltage in enumerate(measure_model.input_V_list):
+        while True:
+            elapsed_time = time.perf_counter() - start_perfcounter
+
+            if elapsed_time >= target_time:
+                dev.write(f"SOV{voltage}")
+                dev.write("*TRG")
+                time_list.append(time.perf_counter() - start_perfcounter)
+                
+                A=dev.query("N?")
+                A_=float(A[3:-2])
+                A_list.append(A_)
+                
+                V=dev.query("SOV?")
+                V_=float(V[3:-2])
+                V_list.append(V_)
+                
+                descrete_time_list.append(i)
+                internal_loop_list.append(measure_model.internal_loop)
+                external_loop_list.append(measure_model.external_loop)
+                
+                target_time += measure_model.tick
+                break
+
+    output_data = EchoStateOutput(
+        voltage=V_list,
+        current=A_list,
+        time=time_list,
+        descrete_time=descrete_time_list,
+        internal_loop=internal_loop_list,
+        external_loop=external_loop_list
+    )
 
     return output_data
 
