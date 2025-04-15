@@ -67,12 +67,12 @@ class EchoStateOutput(BaseModel):
     """
     Output data for Echo State Network
     """
-    voltage: NDArray
-    current: NDArray
-    time: NDArray
-    descrete_time: NDArray
-    internal_loop: NDArray
-    external_loop: NDArray
+    voltage: any
+    current: any
+    time: any
+    descrete_time: any
+    internal_loop: any
+    external_loop: any
 
 
 # @dataclass
