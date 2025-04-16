@@ -13,9 +13,7 @@ from .device_control import write_command, prepare_device, device_connection
 from ..database import append_two_terminal_results, append_record_history
 
 from .measurement_strategies import (
-    MeasurementStrategy, PulseMeasurementStrategy,
-    SweepMeasurementStrategy, NarmaMeasurementStrategy,
-    PulseParameters
+    MeasurementStrategy
 )
 
 
@@ -89,22 +87,6 @@ class MeasurementExecutor:
         finally:
             if self.device:
                 write_command("SBY", self.device)
-
-# 既存の関数をリファクタリング
-def pulse_run(parameters: PulseParameters, common_param: CommonParameters):
-    strategy = PulseMeasurementStrategy(parameters)
-    executor = MeasurementExecutor(strategy, common_param)
-    return executor.execute()
-
-def narma_run(parameters: NarmaParam, common_param: CommonParameters):
-    strategy = NarmaMeasurementStrategy(parameters)
-    executor = MeasurementExecutor(strategy, common_param)
-    return executor.execute()
-
-def sweep_run(parameters: SweepParam, common_param: CommonParameters):
-    strategy = SweepMeasurementStrategy(parameters)
-    executor = MeasurementExecutor(strategy, common_param)
-    return executor.execute()
 
 
 def measure(measure_model: MeasureModelTemplete, dev: any) -> TwoTerminalOutput:

@@ -1,10 +1,10 @@
 from threading import Thread
 from src.gui.widgets import TabSweep
-from src.core import sweep_run
-from src.core.measurement import CommonParameters
-from src.core.measurement import SweepParam
+from src.core.measurement import CommonParameters, MeasurementExecutor
+from src.core.data_processing import SweepParam
 
 from src.core.execution_strategies._base import ExecutionStrategy
+from src.core.measurement_strategies import SweepMeasurementStrategy
 
 class SweepExecutionStrategy(ExecutionStrategy):
     def __init__(self, tab_instance: TabSweep):
@@ -20,13 +20,8 @@ class SweepExecutionStrategy(ExecutionStrategy):
             loop=self.tab.loop,
             tick_time=self.tab.tick
         )
-
-    def execute(self, parameters: SweepParam, common_param: CommonParameters) -> None:
-        def target(parameters, common_param):
-            try:
-                sweep_run(parameters, common_param)
-            except Exception as e:
-                print(f"Error in Sweep execution: {e}")
-        
-        thread = Thread(target=target, args=(parameters, common_param))
-        thread.start()
+    
+    def run_measurement(parameters, common_param: CommonParameters):
+        strategy = SweepMeasurementStrategy(parameters)
+        executor = MeasurementExecutor(strategy, common_param)
+        return executor.execute()

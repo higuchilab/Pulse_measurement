@@ -1,7 +1,5 @@
 import pyvisa as visa
 
-# VISA_DLL_PATH = r'C:\WINDOWS\system32\visa64.dll'
-# GPIB_ADDRESS = 'GPIB1::1::INSTR'
 DEVICE_TIMEOUT = 5000
 
 # デバイスの初期化

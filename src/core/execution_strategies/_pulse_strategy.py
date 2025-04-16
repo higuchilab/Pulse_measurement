@@ -1,12 +1,12 @@
 from threading import Thread
 
 from src.gui.widgets import TabPulse, Statusbar
-from src.core import pulse_run
-from src.core.measurement import CommonParameters
-from src.core.measurement import PulseParameters
+from src.core.measurement import CommonParameters, MeasurementExecutor
+from src.core.measurement_model import PulseParameters
 from src.utils import timer
 
 from src.core.execution_strategies._base import ExecutionStrategy
+from src.core.measurement_strategies import PulseMeasurementStrategy
 
 
 class PulseExecutionStrategy(ExecutionStrategy):
@@ -19,6 +19,11 @@ class PulseExecutionStrategy(ExecutionStrategy):
         return {
             'measure_blocks': self.tab.pulse_blocks
         }
+    
+    def run_measurement(parameters, common_param: CommonParameters):
+        strategy = PulseMeasurementStrategy(parameters)
+        executor = MeasurementExecutor(strategy, common_param)
+        return executor.execute()
 
     def pre_execute(self) -> None:
         standarded_pulse_blocks = self.tab.pulse_blocks.export_standarded_blocks()
@@ -27,13 +32,3 @@ class PulseExecutionStrategy(ExecutionStrategy):
         
         timer_thread = Thread(target=timer, args=(tot_time, self.status_bar))
         timer_thread.start()
-
-    def execute(self, parameters: PulseParameters, common_param: CommonParameters) -> None:
-        def target(parameters, common_param):
-            try:
-                pulse_run(parameters, common_param)
-            except Exception as e:
-                print(f"Error in Pulse execution: {e}")
-
-        thread = Thread(target=target, args=(parameters, common_param))
-        thread.start()

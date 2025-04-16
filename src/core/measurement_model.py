@@ -2,7 +2,7 @@ import numpy as np
 from numpy.typing import NDArray
 from operator import attrgetter
 from abc import ABCMeta, abstractmethod
-from typing import List
+from typing import List, TypedDict
 from pydantic import BaseModel
 from pydantic.fields import Field
 
@@ -89,7 +89,11 @@ class MeasureBlocks(BaseModel):
         flattened_standarded_blocks = flatten(standarded_blocks)
 
         return flattened_standarded_blocks
-    
+
+
+class PulseParameters(TypedDict):
+    measure_blocks: MeasureBlocks
+
 
 class MeasureModelTemplete(metaclass = ABCMeta):
     def __init__(self, tick):

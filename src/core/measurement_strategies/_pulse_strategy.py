@@ -2,13 +2,9 @@ from typing import TypedDict
 
 from ._base import MeasurementStrategy
 from ..data_processing import TwoTerminalOutput
-from ..measurement_model import MeasureModelTemplete, MeasureBlocks, PulseModel
+from ..measurement_model import MeasureModelTemplete, MeasureBlocks, PulseModel, PulseParameters
 # from ..measurement import MeasurementType #クロスインポート
 from ...utils import plot_data
-
-class PulseParameters(TypedDict):
-    measure_blocks: MeasureBlocks
-
 
 class PulseMeasurementStrategy(MeasurementStrategy):
     def __init__(self, params: PulseParameters):
