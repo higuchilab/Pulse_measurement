@@ -22,7 +22,7 @@ from .measurement_strategies import (
 # 定数の分離
 class Constants:
     VISA_DLL_PATH = r'C:\WINDOWS\system32\visa64.dll'
-    GPIB_ADDRESS = 'GPIB0::1::INSTR'
+    GPIB_ADDRESS = 'GPIB1::1::INSTR'
     INTERVAL_TIME = 0.041463354054055365
 
 # 測定タイプの列挙
