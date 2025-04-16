@@ -127,5 +127,5 @@ class MeasureWindow(tk.Frame):
         #     strategy.pre_execute()
 
         # パラメータの取得と実行
-        parameters = strategy.get_parameters()
-        strategy.execute(parameters, common_param)
+        # parameters = strategy.get_parameters()
+        strategy.execute(common_param)

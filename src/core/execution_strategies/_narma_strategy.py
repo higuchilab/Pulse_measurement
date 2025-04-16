@@ -1,12 +1,12 @@
 from threading import Thread
 
 from src.gui.widgets import TabNarma, Statusbar
-from src.core import narma_run
-from src.core.measurement import CommonParameters
-from src.core.measurement import NarmaParam
+from src.core.measurement import CommonParameters, MeasurementExecutor
+from src.core.data_processing import NarmaParam
 from src.utils import timer
 
 from src.core.execution_strategies._base import ExecutionStrategy
+from src.core.measurement_strategies import NarmaMeasurementStrategy
 
 class NarmaExecutionStrategy(ExecutionStrategy):
     def __init__(self, tab_instance: TabNarma, status_bar: Statusbar):
@@ -28,17 +28,12 @@ class NarmaExecutionStrategy(ExecutionStrategy):
             base_voltage=self.tab.base_voltage
         )
     
+    def run_measurement(parameters: NarmaParam, common_param: CommonParameters):
+        strategy = NarmaMeasurementStrategy(parameters)
+        executor = MeasurementExecutor(strategy, common_param)
+        return executor.execute()
+    
     def pre_execute(self) -> None:
         tot_time = (self.tab.pulse_width + self.tab.off_width) * self.tab.discrete_time
         timer_thread = Thread(target=timer, args=(tot_time, self.status_bar))
         timer_thread.start()
-
-    def execute(self, parameters: NarmaParam, common_param: CommonParameters) -> None:
-        def target(parameters, common_param):
-            try:
-                narma_run(parameters, common_param)
-            except Exception as e:
-                print(f"Error in NARMA execution: {e}")
-        
-        thread = Thread(target=target, args=(parameters, common_param))
-        thread.start()

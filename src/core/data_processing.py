@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, TypedDict
 from typing_extensions import Literal
 from numpy.typing import NDArray
 from pydantic import BaseModel
