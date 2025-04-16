@@ -1,18 +1,19 @@
 import pyvisa as visa
 
-VISA_DLL_PATH = r'C:\WINDOWS\system32\visa64.dll'
-GPIB_ADDRESS = 'GPIB1::1::INSTR'
+# VISA_DLL_PATH = r'C:\WINDOWS\system32\visa64.dll'
+# GPIB_ADDRESS = 'GPIB1::1::INSTR'
 DEVICE_TIMEOUT = 5000
 
 # デバイスの初期化
 def device_connection(visa_dll_path, gpib_address: str):
     try:
-        rm = visa.ResourceManager(VISA_DLL_PATH)
-        dev = rm.open_resource(GPIB_ADDRESS)
+        rm = visa.ResourceManager(visa_dll_path)
+        dev = rm.open_resource(gpib_address)
         dev.timeout = DEVICE_TIMEOUT
-    except:
-        print('Caution: visa is stoped')
+    except Exception as e:
+        print(f'Error: visa is stoped: {e}')
 
+    print(f"Using device: {dev}")
     return dev
 
 def write_command(command: str, dev) -> None:

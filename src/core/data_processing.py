@@ -1,7 +1,9 @@
 from dataclasses import dataclass
-from typing import Literal
+from typing import Any
+from typing_extensions import Literal
 from numpy.typing import NDArray
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
+from pydantic.fields import Field
 
 from openpyxl import Workbook, load_workbook
 
@@ -67,12 +69,12 @@ class EchoStateOutput(BaseModel):
     """
     Output data for Echo State Network
     """
-    voltage: any
-    current: any
-    time: any
-    descrete_time: any
-    internal_loop: any
-    external_loop: any
+    voltage: Any
+    current: Any
+    time: Any
+    descrete_time: Any
+    internal_loop: Any
+    external_loop: Any
 
 
 # @dataclass
@@ -104,7 +106,8 @@ class PulseBlockParam(BaseModel):
 #     tick_time: float
 
 class SweepParam(BaseModel):
-    mode: Literal["one_way", "round_trip", "bidirection"]
+    # mode: Literal["one_way", "round_trip", "bidirection"]
+    mode: str
     top_voltage: float
     bottom_voltage: float
     voltage_step: float
@@ -163,7 +166,7 @@ class HistoryParam(BaseModel):
 
 
 class ReferHistoryParam(BaseModel):
-    operator: str = Field(default="")
-    material: str = Field(default="")
-    sample: str = Field(default="")
-    measure_type: str = Field(default="")
+    operator: str
+    material: str
+    sample: str
+    measure_type: str
