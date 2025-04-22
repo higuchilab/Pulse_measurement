@@ -13,6 +13,7 @@ class EchoStateMeasurementStrategy(MeasurementStrategy):
         self.parameters = params
         self.input_value = None
         self.correct_value = None
+        print(f"Parameters: {self.parameters}")
         self._prepare_dataset()
 
     def _prepare_dataset(self):

@@ -1,22 +1,11 @@
 from pydantic import BaseModel, Field
 import tkinter as tk
-from tkinter import StringVar, BooleanVar, IntVar, DoubleVar, Radiobutton, Frame, Label, Button, Entry
+from tkinter import Variable, StringVar, BooleanVar, IntVar, DoubleVar, Radiobutton, Frame, Label, Button, Entry
 from tkinter.ttk import Treeview
+from typing import Literal
 
 from ._common_item import EntryForm, RadioButtonForm
 from src.core.data_processing import EchoStateParam
-
-# class EchoStateParam(BaseModel):
-#     """
-#     echo_state測定に関する必須入力事項
-#     """
-#     pulse_width: float = Field(default=1.0, gt=0., description="パルス幅")
-#     duty_rate: float = Field(default=0.5, gt=0., lt=1, description="デューティ比")
-#     tick: float = Field(default=0., gt=0., description="時間分解能")
-#     base_voltage: float = Field(default=0., gt=-30., lt=30., description="基準電圧")
-#     top_voltage: float = Field(default=0.5, gt=-30., lt=30., description="パルス電圧値")
-#     inner_loop_num: int = Field(default=1, gt=0, description="内側のループ数")
-#     outer_loop_num: int = Field(default=1, gt=0, description="外側のループ数")
 
 
 class TabEchoState(Frame):
@@ -59,79 +48,55 @@ class ParameterInputs(Frame):
         self.select_from_template_button = Button(master=self, text="テンプレートから選択")
         self.select_from_template_button.pack(anchor=tk.W, side="top", padx=10)
 
-        self._pulse_width = DoubleVar(value=self.param.pulse_width)
-        self._pulse_width.trace_add("write", self.param.update("pulse_width", self._pulse_width.get()))
-        self.input_pulse_width = EntryForm(
-            label_name="パルス幅",
-            input_width=5, 
-            master=self, 
-            value=self._pulse_width
-        )
-        self.input_pulse_width.pack(anchor=tk.W, side="top", padx=10)
+        self.variables = {
+            "pulse_width": DoubleVar(value=self.param.pulse_width),
+            "duty_rate": DoubleVar(value=self.param.duty_rate),
+            "tick": DoubleVar(value=self.param.tick),
+            "discrete_time": IntVar(value=self.param.discrete_time),
+            "top_voltage": DoubleVar(value=self.param.top_voltage),
+            "base_voltage": DoubleVar(value=self.param.base_voltage),
+            "inner_loop_num": IntVar(value=self.param.inner_loop_num),
+            "outer_loop_num": IntVar(value=self.param.outer_loop_num),
+        }
 
-        self._duty_rate = DoubleVar(value=self.param.duty_rate)
-        self._duty_rate.trace_add("write", self.param.update("duty_rate", self._duty_rate.get()))
-        self.input_off_width = EntryForm(
-            label_name="休止幅", 
-            input_width=5, 
+        self._create_entry(label_name="パルス幅", param_name="pulse_width", input_width=5)
+        self._create_entry(label_name="休止幅", param_name="duty_rate", input_width=5)
+        self._create_entry(label_name="tick", param_name="tick", input_width=5)
+        self._create_entry(label_name="離散時間", param_name="discrete_time", input_width=5)
+        self._create_entry(label_name="パルス電圧", param_name="top_voltage", input_width=5)
+        self._create_entry(label_name="基準電圧", param_name="base_voltage", input_width=5)
+        self._create_entry(label_name="内側のループ", param_name="inner_loop_num", input_width=5)
+        self._create_entry(label_name="外側のループ", param_name="outer_loop_num", input_width=5)
+
+    def _create_entry(self, label_name: str, param_name: str, input_width: float):
+        var: Variable = self.variables[param_name]
+        var.trace_add("write", lambda *args, name=param_name: self._update_param(name, var.get()))
+        entry = EntryForm(
+            label_name=label_name,
+            input_width=input_width,
             master=self,
-            value=self._duty_rate
+            value=var
         )
-        self.input_off_width.pack(anchor=tk.W, side="top", padx=10)
+        entry.pack(anchor=tk.W, side="top", padx=10)
 
-        self._tick = DoubleVar(value=self.param.tick)
-        self._tick.trace_add("write", self.param.update("tick", self._tick.get()))
-        self.input_tick = EntryForm(
-            label_name="tick", 
-            input_width=5, 
-            master=self,
-            value=self._tick
-        )
-        self.input_tick.pack(anchor=tk.W, side="top", padx=10)
-
-        self._discrete_time = IntVar(value=self.param.discrete_time)
-        self._discrete_time.trace_add("write", self.param.update("discrete_time", self._discrete_time.get()))
-        self.input_discrete_time = EntryForm(
-            label_name="離散時間",
-            input_width=5,
-            master=self,
-            value=self._discrete_time,
-        )
-        self.input_discrete_time.pack(anchor=tk.W, side="top", padx=10)
-
-        self._base_voltage = DoubleVar(value=self.param.base_voltage)
-        self._base_voltage.trace_add("write", self.param.update("base_voltage", self._base_voltage.get()))
-        self.input_base_voltage = EntryForm(
-            label_name="基準電圧",
-            input_width=5,
-            master=self,
-            value=self._base_voltage
-        )
-        self.input_base_voltage.pack(anchor=tk.W, side="top", padx=10)
-
-        self._top_voltage = DoubleVar(value=self.param.top_voltage)
-        self._top_voltage.trace_add("write", self.param.update("top_voltage", self._top_voltage.get()))
-        self.input_top_voltage = EntryForm(
-            label_name="パルス電圧", input_width=5, master=self, value=self._top_voltage
-        )
-        self.input_top_voltage.pack(anchor=tk.W, side="top", padx=10)
-
-        self._inner_loop_num = IntVar(value=self.param.inner_loop_num)
-        self._inner_loop_num.trace_add("write", self.param.update("inner_loop_num", self._inner_loop_num.get()))
-        self.input_inner_loop_num = EntryForm(
-            label_name="内側のループ", input_width=5, master=self, value=self._inner_loop_num
-        )
-        self.input_inner_loop_num.pack(anchor=tk.W, side="top", padx=10)
-
-        self._outer_loop_num = IntVar(value=self.param.outer_loop_num)
-        self._outer_loop_num.trace_add("write", self.param.update("outer_loop_num", self._outer_loop_num.get()))
-        self.input_outer_loop_num = EntryForm(
-            label_name="外側のループ",
-            input_width=5,
-            master=self,
-            value=self._outer_loop_num,
-        )
-        self.input_outer_loop_num.pack(anchor=tk.W, side="top", padx=10)
+    def _update_param(self, param_name: str, value):
+        """
+        Update the parameter value
+        """
+        try:
+            if param_name in self.variables:
+                try:
+                    setattr(self.param, param_name, value)
+                except TypeError as e:
+                    print(f"Invalid type for {param_name}: {value}")
+                    raise e
+                except Exception as e:
+                    raise e
+                
+            else:
+                raise ValueError(f"Invalid parameter name: {param_name}")
+        except Exception as e:
+            print(f"Error updating parameter {param_name}: {e}")
 
 
 # class TabEchoStateRight(Frame):
