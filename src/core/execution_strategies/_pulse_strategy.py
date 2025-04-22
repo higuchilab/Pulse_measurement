@@ -20,7 +20,7 @@ class PulseExecutionStrategy(ExecutionStrategy):
             'measure_blocks': self.tab.pulse_blocks
         }
     
-    def run_measurement(parameters, common_param: CommonParameters):
+    def run_measurement(self, parameters, common_param: CommonParameters):
         strategy = PulseMeasurementStrategy(parameters)
         executor = MeasurementExecutor(strategy, common_param)
         return executor.execute()

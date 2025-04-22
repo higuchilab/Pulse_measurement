@@ -89,6 +89,20 @@ class SweepParam(BaseModel):
 
 
 class NarmaParam(BaseModel):
+    """
+    Parameters for NARMA measurement from GUI\n
+    parameters:
+    - use_database: bool
+    - model: str
+    - pulse_width: float
+    - off_width: float
+    - tick: float
+    - nodes: int
+    - discrete_time: int
+    - bot_voltage: float
+    - top_voltage: float
+    - base_voltage: float
+    """
     use_database: bool
     model: str
     pulse_width: float
@@ -99,6 +113,29 @@ class NarmaParam(BaseModel):
     bot_voltage: float
     top_voltage: float
     base_voltage: float
+
+
+class EchoStateParam(BaseModel):
+    """
+    Parameters for Echo State measurement from GUI\n
+    parameters:
+    - pulse_width: float
+    - duty_rate: float
+    - tick: float
+    - discrete_time: int
+    - top_voltage: float
+    - base_voltage: float
+    - inner_loop_num: int
+    - outer_loop_num: int
+    """
+    pulse_width: float = Field(default=1., gt=0, description="Pulse width")
+    duty_rate: float = Field(default=0.5, gt=0, lt=1, description="Duty rate")
+    tick: float = Field(default=0.5, gt=0, description="Tick time")
+    discrete_time: int = Field(default=100, gt=0, description="Discrete time")
+    top_voltage: float = Field(default=0.8, gt=-30, lt=30, description="Top voltage")
+    base_voltage: float = Field(default=0., gt=-30, lt=30, description="Base voltage")
+    inner_loop_num: int = Field(default=30, gt=0, description="Inner loop number")
+    outer_loop_num: int = Field(default=10, gt=0, description="Outer loop number")
 
 
 class HistoryParam(BaseModel):

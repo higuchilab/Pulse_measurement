@@ -10,13 +10,22 @@ project_root = str(Path(__file__).parent.parent.parent)
 if project_root not in sys.path:
     sys.path.append(project_root)
 
-from src.gui.widgets import common_input_form, TabNarma, TabPulse, TabSweep, Statusbar, Sidebar, HistoryWindow
+from src.gui.widgets import (
+    common_input_form, 
+    TabNarma, 
+    TabPulse, 
+    TabSweep,
+    TabEchoState,
+    Statusbar, 
+    Sidebar, 
+    HistoryWindow
+)
 
 from src.database import append_record_users, refer_users_table, append_record_materials, refer_materials_table, append_record_samples, refer_samples_table
 
 from src.core import CommonParameters
 
-from src.core.execution_strategies import NarmaExecutionStrategy, PulseExecutionStrategy, SweepExecutionStrategy
+from src.core.execution_strategies import NarmaExecutionStrategy, PulseExecutionStrategy, SweepExecutionStrategy, EchoStateExecutionStrategy
 
 from src.utils import timer
 
@@ -57,8 +66,8 @@ class MeasureWindow(tk.Frame):
         self.statusbar = statusbar
         self.form_top = common_input_form(self)
 
-        tab_classes = [TabNarma, TabPulse, TabSweep]
-        tab_name = ["NARMA", "Pulse", "I-Vsweep"]
+        tab_classes = [TabNarma, TabPulse, TabSweep, TabEchoState]
+        tab_name = ["NARMA", "Pulse", "I-Vsweep", "EchoState"]
 
         self.notebook = Notebook(master=self)
 
@@ -77,7 +86,8 @@ class MeasureWindow(tk.Frame):
         self.execution_strategies = {
             0: lambda: NarmaExecutionStrategy(self.tab_instances[0], self.statusbar),
             1: lambda: PulseExecutionStrategy(self.tab_instances[1], self.statusbar),
-            2: lambda: SweepExecutionStrategy(self.tab_instances[2])
+            2: lambda: SweepExecutionStrategy(self.tab_instances[2]),
+            3: lambda: EchoStateExecutionStrategy(self.tab_instances[3], self.statusbar)
         }
 
     def _get_common_parameters(self, file_path: str) -> CommonParameters:
