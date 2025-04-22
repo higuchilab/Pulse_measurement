@@ -31,6 +31,7 @@ class ExecutionStrategy(Protocol):
                 )
             except Exception as e:
                 print(f"Error during execution: {e}")
+                raise e
         
         thread = Thread(target=target)
         thread.start()

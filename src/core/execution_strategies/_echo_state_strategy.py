@@ -10,8 +10,8 @@ from src.core.measurement_strategies import EchoStateMeasurementStrategy
 
 class EchoStateExecutionStrategy(ExecutionStrategy):
     def __init__(self, tab_instance: TabEchoState, status_bar: Statusbar):
-        self.tab = tab_instance
-        self.param: EchoStateParam = tab_instance.config
+        # self.tab = tab_instance
+        self.param: EchoStateParam = tab_instance.param
         self.status_bar = status_bar
 
     def get_parameters(self) -> EchoStateParam:
