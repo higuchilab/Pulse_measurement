@@ -6,7 +6,7 @@ from typing import List, TypedDict
 from pydantic import BaseModel
 from pydantic.fields import Field
 
-from .data_processing import SweepParam
+from .data_processing import SweepParam, EchoStateParam
 
 
 class MeasureBlock(BaseModel):
@@ -158,7 +158,7 @@ class PulseModel(MeasureModelTemplete):
             tick: float,
             base_voltage: float,
             input_array: NDArray
-            ):
+        ):
         self.tick = tick
         for voltage in input_array:
             self.blocks.append_new_block(
@@ -168,7 +168,23 @@ class PulseModel(MeasureModelTemplete):
                 top_time=pulse_width,
                 base_time=off_width,
                 interval=0.0
-                )
+            )
+            
+    def make_model_from_echostate_input_array(
+            self,
+            echostate_param: EchoStateParam,
+            input_array: NDArray
+        ):
+        self.tick = echostate_param.tick
+        for voltage in input_array:
+            self.blocks.append_new_block(
+                loop=1,
+                V_top=voltage,
+                V_base=echostate_param.base_voltage,
+                top_time=echostate_param.pulse_width * echostate_param.duty_rate,
+                base_time=echostate_param.pulse_width * (1 - echostate_param.duty_rate),
+                interval=0.0
+            )
 
 
 class SweepModel(MeasureModelTemplete):

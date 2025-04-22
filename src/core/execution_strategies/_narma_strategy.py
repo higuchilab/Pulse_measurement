@@ -28,7 +28,7 @@ class NarmaExecutionStrategy(ExecutionStrategy):
             base_voltage=self.tab.base_voltage
         )
     
-    def run_measurement(parameters: NarmaParam, common_param: CommonParameters):
+    def run_measurement(self, parameters: NarmaParam, common_param: CommonParameters):
         strategy = NarmaMeasurementStrategy(parameters)
         executor = MeasurementExecutor(strategy, common_param)
         return executor.execute()

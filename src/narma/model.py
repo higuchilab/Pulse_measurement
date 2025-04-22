@@ -87,17 +87,5 @@ def generate_narma_dataset(model: Literal["narma2", "narma10"], steps: int, inpu
 
     return u
 
-    #訓練データとテストデータに分割
-    train_size = int(steps * 0.8)  # 80%を訓練データに
-
-    u_train, u_test = u[:train_size], u[train_size:]
-    y_train, y_test = y[:train_size], y[train_size:]
-
-    print("訓練データのサイズ:", len(u_train))
-    print("テストデータのサイズ:", len(u_test))
-
-    return u_train, y_train, u_test, y_test
-
-
 def call_narma_dataset() -> tuple[NDArray, NDArray, NDArray, NDArray]:
     pass
