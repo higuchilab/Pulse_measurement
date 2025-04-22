@@ -137,6 +137,50 @@ class EchoStateParam(BaseModel):
     inner_loop_num: int = Field(default=30, gt=0, description="Inner loop number")
     outer_loop_num: int = Field(default=10, gt=0, description="Outer loop number")
 
+    def update(
+            self,
+            target: Literal[
+                "pulse_width",
+                "duty_rate",
+                "tick",
+                "discrete_time",
+                "top_voltage",
+                "base_voltage",
+                "inner_loop_num",
+                "outer_loop_num"
+            ], 
+            value
+        ) -> None:
+        """
+        Update the parameter value
+        """
+        try:
+            if target == "pulse_width":
+                self.pulse_width = value
+            elif target == "duty_rate":
+                self.duty_rate = value
+            elif target == "tick":
+                self.tick = value
+            elif target == "discrete_time":
+                self.discrete_time = value
+            elif target == "top_voltage":
+                self.top_voltage = value
+            elif target == "base_voltage":
+                self.base_voltage = value
+            elif target == "inner_loop_num":
+                self.inner_loop_num = value
+            elif target == "outer_loop_num":
+                self.outer_loop_num = value
+        except ValueError as e:
+            print(f"Invalid value for {target}: {value}")
+            raise e
+        except AttributeError as e:
+            print(f"Invalid target parameter: {target}")
+        except TypeError as e:
+            print(f"Invalid type for {target}: {value}")
+        except Exception as e:
+            print(f"Unexpected error: {e}")
+
 
 class HistoryParam(BaseModel):
     user_name: str

@@ -26,11 +26,11 @@ class TabEchoState(Frame):
     """
     def __init__(self, master):
         super().__init__(master=master)
-        self.config = EchoStateParam()
-        self.tab_echo_state_left = TabEchoStateLeft(master=self, config=self.config)
+        self.param = EchoStateParam()
+        self.tab_echo_state_left = TabEchoStateLeft(master=self, param=self.param)
         self.tab_echo_state_left.pack(side="left", expand=True, padx=5)
 
-        # self.tab_echo_state_right = TabEchoStateRight(master=self, config=self.config)
+        # self.tab_echo_state_right = TabEchoStateRight(master=self, param=self.param)
         # self.tab_echo_state_right.pack(anchor=tk.N, side="right", expand=True, padx=5)
 
 
@@ -38,11 +38,11 @@ class TabEchoStateLeft(Frame):
     """
     echo_stateタブの左側
     """
-    def __init__(self, master, config: EchoStateParam):
+    def __init__(self, master, param: EchoStateParam):
         super().__init__(master=master)
-        self.config = config
+        self.param = param
 
-        self.parameter_inputs = ParameterInputs(master=self, config=self.config)
+        self.parameter_inputs = ParameterInputs(master=self, param=self.param)
         self.parameter_inputs.pack(anchor=tk.W, expand=True)
 
 
@@ -50,16 +50,17 @@ class ParameterInputs(Frame):
     """
     echo_state測定に関する必須入力事項
     """
-    def __init__(self, master, config: EchoStateParam):
+    def __init__(self, master, param: EchoStateParam):
         super().__init__(master=master)
-        self.config = config
+        self.param = param
 
         self.label = Label(master=self, text="パラメーター")
         self.label.pack(anchor=tk.W, side="top")
         self.select_from_template_button = Button(master=self, text="テンプレートから選択")
         self.select_from_template_button.pack(anchor=tk.W, side="top", padx=10)
 
-        self._pulse_width = DoubleVar(value=self.config.pulse_width)
+        self._pulse_width = DoubleVar(value=self.param.pulse_width)
+        self._pulse_width.trace_add("write", self.param.update("pulse_width", self._pulse_width.get()))
         self.input_pulse_width = EntryForm(
             label_name="パルス幅",
             input_width=5, 
@@ -68,7 +69,8 @@ class ParameterInputs(Frame):
         )
         self.input_pulse_width.pack(anchor=tk.W, side="top", padx=10)
 
-        self._duty_rate = DoubleVar(value=self.config.duty_rate)
+        self._duty_rate = DoubleVar(value=self.param.duty_rate)
+        self._duty_rate.trace_add("write", self.param.update("duty_rate", self._duty_rate.get()))
         self.input_off_width = EntryForm(
             label_name="休止幅", 
             input_width=5, 
@@ -77,7 +79,8 @@ class ParameterInputs(Frame):
         )
         self.input_off_width.pack(anchor=tk.W, side="top", padx=10)
 
-        self._tick = DoubleVar(value=self.config.tick)
+        self._tick = DoubleVar(value=self.param.tick)
+        self._tick.trace_add("write", self.param.update("tick", self._tick.get()))
         self.input_tick = EntryForm(
             label_name="tick", 
             input_width=5, 
@@ -86,7 +89,8 @@ class ParameterInputs(Frame):
         )
         self.input_tick.pack(anchor=tk.W, side="top", padx=10)
 
-        self._discrete_time = IntVar(value=self.config.discrete_time)
+        self._discrete_time = IntVar(value=self.param.discrete_time)
+        self._discrete_time.trace_add("write", self.param.update("discrete_time", self._discrete_time.get()))
         self.input_discrete_time = EntryForm(
             label_name="離散時間",
             input_width=5,
@@ -95,7 +99,8 @@ class ParameterInputs(Frame):
         )
         self.input_discrete_time.pack(anchor=tk.W, side="top", padx=10)
 
-        self._base_voltage = DoubleVar(value=self.config.base_voltage)
+        self._base_voltage = DoubleVar(value=self.param.base_voltage)
+        self._base_voltage.trace_add("write", self.param.update("base_voltage", self._base_voltage.get()))
         self.input_base_voltage = EntryForm(
             label_name="基準電圧",
             input_width=5,
@@ -104,19 +109,22 @@ class ParameterInputs(Frame):
         )
         self.input_base_voltage.pack(anchor=tk.W, side="top", padx=10)
 
-        self._top_voltage = DoubleVar(value=self.config.top_voltage)
+        self._top_voltage = DoubleVar(value=self.param.top_voltage)
+        self._top_voltage.trace_add("write", self.param.update("top_voltage", self._top_voltage.get()))
         self.input_top_voltage = EntryForm(
             label_name="パルス電圧", input_width=5, master=self, value=self._top_voltage
         )
-        self.input_base_voltage.pack(anchor=tk.W, side="top", padx=10)
+        self.input_top_voltage.pack(anchor=tk.W, side="top", padx=10)
 
-        self._inner_loop_num = IntVar(value=self.config.inner_loop_num)
+        self._inner_loop_num = IntVar(value=self.param.inner_loop_num)
+        self._inner_loop_num.trace_add("write", self.param.update("inner_loop_num", self._inner_loop_num.get()))
         self.input_inner_loop_num = EntryForm(
             label_name="内側のループ", input_width=5, master=self, value=self._inner_loop_num
         )
         self.input_inner_loop_num.pack(anchor=tk.W, side="top", padx=10)
 
-        self._outer_loop_num = IntVar(value=self.config.outer_loop_num)
+        self._outer_loop_num = IntVar(value=self.param.outer_loop_num)
+        self._outer_loop_num.trace_add("write", self.param.update("outer_loop_num", self._outer_loop_num.get()))
         self.input_outer_loop_num = EntryForm(
             label_name="外側のループ",
             input_width=5,
@@ -130,7 +138,7 @@ class ParameterInputs(Frame):
 #     """
 #     echo_stateタブの右側
 #     """
-#     def __init__(self, master, config: EchoStateParam):
+#     def __init__(self, master, param: EchoStateParam):
 #         super().__init__(master=master)
 #         self._is_use_prepared_array = BooleanVar(value=True)
 #         self._is_use_prepared_array.trace_add("write", self.__on_change_is_use_prepared_array)
