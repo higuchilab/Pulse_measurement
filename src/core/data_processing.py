@@ -125,8 +125,8 @@ class EchoStateParam(BaseModel):
     - discrete_time: int
     - top_voltage: float
     - base_voltage: float
-    - inner_loop_num: int
-    - outer_loop_num: int
+    - inner_loop_idx: int
+    - outer_loop_idx: int
     """
     pulse_width: float = Field(default=1., gt=0, description="Pulse width")
     duty_rate: float = Field(default=0.5, gt=0, lt=1, description="Duty rate")
@@ -134,8 +134,8 @@ class EchoStateParam(BaseModel):
     discrete_time: int = Field(default=100, gt=0, description="Discrete time")
     top_voltage: float = Field(default=0.8, gt=-30, lt=30, description="Top voltage")
     base_voltage: float = Field(default=0., gt=-30, lt=30, description="Base voltage")
-    inner_loop_num: int = Field(default=30, gt=0, description="Inner loop number")
-    outer_loop_num: int = Field(default=10, gt=0, description="Outer loop number")
+    inner_loop_idx: int = Field(default=30, gt=0, description="Inner loop number")
+    outer_loop_idx: int = Field(default=10, gt=0, description="Outer loop number")
 
     # def update(
     #         self,
@@ -146,8 +146,8 @@ class EchoStateParam(BaseModel):
     #             "discrete_time",
     #             "top_voltage",
     #             "base_voltage",
-    #             "inner_loop_num",
-    #             "outer_loop_num"
+    #             "inner_loop_idx",
+    #             "outer_loop_idx"
     #         ], 
     #         value
     #     ) -> None:
@@ -167,10 +167,10 @@ class EchoStateParam(BaseModel):
     #             self.top_voltage = value
     #         elif target == "base_voltage":
     #             self.base_voltage = value
-    #         elif target == "inner_loop_num":
-    #             self.inner_loop_num = value
-    #         elif target == "outer_loop_num":
-    #             self.outer_loop_num = value
+    #         elif target == "inner_loop_idx":
+    #             self.inner_loop_idx = value
+    #         elif target == "outer_loop_idx":
+    #             self.outer_loop_idx = value
     #     except ValueError as e:
     #         print(f"Invalid value for {target}: {value}")
     #         raise e

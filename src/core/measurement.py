@@ -1,4 +1,6 @@
 import time
+import numpy as np
+
 from typing import TypedDict, Protocol, Any
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
@@ -65,7 +67,8 @@ class MeasurementExecutor:
         save_data_to_database(history_id=history_id, output=output)
 
         if self.common_param.file_path:
-            output_to_excel_file(self.common_param.file_path, output=output)
+            output_to_csv(file_path=self.common_param.file_path, output=output)
+            # output_to_excel_file(self.common_param.file_path, output=output)
 
     def execute(self) -> TwoTerminalOutput:
         """測定の実行"""
@@ -74,11 +77,12 @@ class MeasurementExecutor:
             measure_model = self.strategy.create_measure_model()
             print(measure_model)
             print("測定開始")
-            output = measure(measure_model=measure_model, dev=self.device)
+            output = self.strategy.measure(measure_model=measure_model, dev=self.device)
+            # output = measure(measure_model=measure_model, dev=self.device)
             
             write_command("SBY", self.device)
             print("測定終了")
-
+            output = self.strategy.data_formatting(output)
             self.strategy.post_process(output)
             self._save_results(output)
 
@@ -89,39 +93,39 @@ class MeasurementExecutor:
                 write_command("SBY", self.device)
 
 
-def measure(measure_model: MeasureModelTemplete, dev: any) -> TwoTerminalOutput:
-    V_list = []
-    A_list = []
-    time_list = []
+# def measure(measure_model: MeasureModelTemplete, dev: any) -> TwoTerminalOutput:
+#     V_list = []
+#     A_list = []
+#     time_list = []
 
-    start_perfcounter = time.perf_counter()
-    target_time = 0.0
-    for i, voltage in enumerate(measure_model.input_V_list):
-        while True:
-            elapsed_time = time.perf_counter() - start_perfcounter
+#     start_perfcounter = time.perf_counter()
+#     target_time = 0.0
+#     for i, voltage in enumerate(measure_model.input_V_list):
+#         while True:
+#             elapsed_time = time.perf_counter() - start_perfcounter
 
-            if elapsed_time >= target_time:
-                dev.write(f"SOV{voltage}")
-                dev.write("*TRG")
-                time_list.append(time.perf_counter() - start_perfcounter)
+#             if elapsed_time >= target_time:
+#                 dev.write(f"SOV{voltage}")
+#                 dev.write("*TRG")
+#                 time_list.append(time.perf_counter() - start_perfcounter)
                 
-                A=dev.query("N?")
-                A_=float(A[3:-2])
-                A_list.append(A_)
+#                 A=dev.query("N?")
+#                 A_=float(A[3:-2])
+#                 A_list.append(A_)
                 
-                V=dev.query("SOV?")
-                V_=float(V[3:-2])
-                V_list.append(V_)
-                target_time += measure_model.tick
-                if i % 100 == 0:
-                    graph(time_list, V_list, A_list)
+#                 V=dev.query("SOV?")
+#                 V_=float(V[3:-2])
+#                 V_list.append(V_)
+#                 target_time += measure_model.tick
+#                 if i % 100 == 0:
+#                     graph(time_list, V_list, A_list)
 
-                break
+#                 break
         
 
-    output_data = TwoTerminalOutput(voltage=V_list, current=A_list, time=time_list)
+#     output_data = TwoTerminalOutput(voltage=V_list, current=A_list, time=time_list)
 
-    return output_data
+#     return output_data
 
 def echo_state_measure(
     measure_model: MeasureModelTemplete, dev: any
@@ -197,6 +201,10 @@ def output_to_excel_file(file_path: str, output: TwoTerminalOutput):
 
     wb.save(file_path)
     wb.close()
+
+
+def output_to_csv(file_path: str, output):
+    np.savetxt(file_path, output)
 
 
 def save_data_to_database(history_id: int, output: TwoTerminalOutput):
