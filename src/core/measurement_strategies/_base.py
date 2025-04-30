@@ -1,6 +1,8 @@
+import time
 from typing import Protocol
 from ..measurement_model import MeasureModelTemplete
 from ..data_processing import TwoTerminalOutput
+from src.visualization._graph import graph
 
 # 測定戦略のインターフェース
 class MeasurementStrategy(Protocol):
@@ -11,6 +13,44 @@ class MeasurementStrategy(Protocol):
     def get_measurement_type(self) -> str:
         """測定タイプを取得"""
         pass
+
+    def measure(measure_model: MeasureModelTemplete, dev: any) -> TwoTerminalOutput:
+        """測定を実行"""
+        V_list = []
+        A_list = []
+        time_list = []
+
+        start_perfcounter = time.perf_counter()
+        target_time = 0.0
+        for i, voltage in enumerate(measure_model.input_V_list):
+            while True:
+                elapsed_time = time.perf_counter() - start_perfcounter
+                if elapsed_time >= target_time:
+                    dev.write(f"SOV{voltage}")
+                    dev.write("*TRG")
+                    time_list.append(time.perf_counter() - start_perfcounter)
+
+                    A = dev.query("N?")
+                    A_ = float(A[3:-2])
+                    A_list.append(A_)
+
+                    V = dev.query("SOV?")
+                    V_ = float(V[3:-2])
+                    V_list.append(V_)
+                    target_time += measure_model.tick
+                    if i % 100 == 0:
+                        graph(time_list, V_list, A_list)
+
+                    break
+
+        output_data = TwoTerminalOutput(voltage=V_list, current=A_list, time=time_list)
+
+        return output_data
+    
+    def data_formatting(self, output: TwoTerminalOutput) -> any:
+        """測定結果のフォーマットを整える"""
+        formatted_data = output
+        return formatted_data
 
     def post_process(self, output: TwoTerminalOutput) -> None:
         """測定後の追加処理"""

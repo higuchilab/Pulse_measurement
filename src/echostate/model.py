@@ -2,64 +2,36 @@ import numpy as np
 from typing import Literal
 from numpy.typing import NDArray
 
-# def use_echostate_input_array(use_database: bool, model: Literal["echostate2", "echostate10"], steps: int=None, input_range_bot: float=None, input_range_top: float=None) -> NDArray:
-#     """
-#     echostateデータセットを使う
-
-#     Parameters
-#     ----------
-#     use_database: bool
-#         データベースから呼び出すかどうか
-#     model: 'narma2', 'narma10'
-#         モデル選択
-#     steps: int
-#         離散時間数
-#     input_range_bot: float
-#         入力値の下限
-#     input_range_top: float
-#         入力値の上限
-
-#     Returns
-#     -------
-#     u: NDArray
-#         入力配列
-#     y: NDArray
-#         出力配列
-#     """
-
-#     return generate_echostate_dataset(model, steps, input_range_bot, input_range_top)
+from src.core.data_processing import EchoStateParam
 
 
 def generate_echostate_input_array(
-        steps: int, 
-        inner_loop_num: int, 
-        outer_loop_num: int,
-        top_voltage: float,
-        base_voltage: float
+        param: EchoStateParam,
     ) -> NDArray:
     """
-    echostateデータセットを作成する
+    echostate入力配列を生成する関数
 
     Attributes
     ----------
-    model: 'echostate2', 'echostate10'
-        モデル選択
-    steps: int
-        離散時間数
-    input_range_bot: float
-        入力値の下限
-    input_range_top: float
-        入力値の上限
+    param: EchoStateParam
+        パラメータクラス
 
     Returns
     -------
-    u: NDArray
-        入力配列
-    """    
-    # echostate_templete_id = append_record_echostate_templetes(param=(steps, input_range_top, input_range_bot))
+    result: NDArray
+        多次元配列
+        - 各行が [input_voltage, discrete_time, inner_loop_idx, outer_loop_idx] の形
+    """
+    u = np.random.choice([param.top_voltage, param.base_voltage], param.discrete_time)
+    inner_array = np.tile(u, param.inner_loop_idx)
+    outer_array = np.tile(inner_array, param.outer_loop_idx)
 
-    u = np.random.choice([top_voltage, base_voltage], steps)
-    inner_array = np.tile(u, inner_loop_num)
-    outer_array = np.tile(inner_array, outer_loop_num)
+    total_length = param.discrete_time * param.inner_loop_idx * param.outer_loop_idx
+    discrete_time = np.arange(1, total_length + 1)
+    inner_loop_idx = np.repeat(np.arange(param.inner_loop_idx), param.discrete_time)
+    inner_loop_idx = np.tile(inner_loop_idx, param.outer_loop_idx)
+    outer_loop_idx = np.repeat(np.arange(param.outer_loop_idx), param.discrete_time * param.inner_loop_idx)
 
-    return outer_array
+    result = np.stack([outer_array, discrete_time, inner_loop_idx, outer_loop_idx], axis=1)
+
+    return result
