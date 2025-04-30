@@ -57,14 +57,14 @@ class MeasurementExecutor:
 
     def _save_results(self, output: TwoTerminalOutput) -> None:
         """結果の保存"""
-        history_param = HistoryParam(
-            user_name=self.common_param.operator,
-            sample_name=self.common_param.sample_name,
-            measure_type=self.strategy.get_measurement_type(),
-            option=self.common_param.option
-        )
-        history_id = append_record_history(history_param)
-        save_data_to_database(history_id=history_id, output=output)
+        # history_param = HistoryParam(
+        #     user_name=self.common_param.operator,
+        #     sample_name=self.common_param.sample_name,
+        #     measure_type=self.strategy.get_measurement_type(),
+        #     option=self.common_param.option
+        # )
+        # history_id = append_record_history(history_param)
+        # save_data_to_database(history_id=history_id, output=output)
 
         if self.common_param.file_path:
             output_to_csv(file_path=self.common_param.file_path, output=output)

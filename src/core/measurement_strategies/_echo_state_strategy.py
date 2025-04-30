@@ -76,6 +76,9 @@ class EchoStateMeasurementStrategy(MeasurementStrategy):
         """
         測定結果のフォーマットを整える
         """
+        plot_data(output)
+
+
         discrete_idx = np.repeat(
             self.input_array[:, 1],
             self.parameters.pulse_width / self.parameters.tick,
@@ -92,15 +95,16 @@ class EchoStateMeasurementStrategy(MeasurementStrategy):
             axis=0,
         )
 
-        node_idx_single = np.arange(self.parameters.pulse_width / self.parameters.tick)
-        node_idx_inner_loop = np.tile(node_idx_single, self.parameters.inner_loop_idx)
+        node_idx_single = np.arange(1, self.parameters.pulse_width / self.parameters.tick + 1)
+        node_idx_one_loop = np.tile(node_idx_single, self.parameters.discrete_time)
+        node_idx_inner_loop = np.tile(node_idx_one_loop, self.parameters.inner_loop_idx)
         node_idx = np.tile(node_idx_inner_loop, self.parameters.outer_loop_idx)
 
         result = np.stack(
             [
-                np.array[output.voltage],
-                np.array[output.current],
-                np.array[output.time],
+                np.array([output.voltage]).reshape(-1),
+                np.array([output.current]).reshape(-1),
+                np.array([output.time]).reshape(-1),
                 discrete_idx,
                 node_idx,
                 inner_loop_idx,
@@ -112,6 +116,5 @@ class EchoStateMeasurementStrategy(MeasurementStrategy):
         return result
 
     def post_process(self, output: TwoTerminalOutput) -> None:
-
-        plot_data(output)
+        pass
         # EchoState特有の後処理があれば実装

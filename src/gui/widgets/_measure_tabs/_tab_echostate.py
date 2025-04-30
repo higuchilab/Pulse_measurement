@@ -55,8 +55,8 @@ class ParameterInputs(Frame):
             "discrete_time": IntVar(value=self.param.discrete_time),
             "top_voltage": DoubleVar(value=self.param.top_voltage),
             "base_voltage": DoubleVar(value=self.param.base_voltage),
-            "inner_loop_num": IntVar(value=self.param.inner_loop_num),
-            "outer_loop_num": IntVar(value=self.param.outer_loop_num),
+            "inner_loop_idx": IntVar(value=self.param.inner_loop_idx),
+            "outer_loop_idx": IntVar(value=self.param.outer_loop_idx),
         }
 
         self._create_entry(label_name="パルス幅", param_name="pulse_width", input_width=5)
@@ -65,8 +65,8 @@ class ParameterInputs(Frame):
         self._create_entry(label_name="離散時間", param_name="discrete_time", input_width=5)
         self._create_entry(label_name="パルス電圧", param_name="top_voltage", input_width=5)
         self._create_entry(label_name="基準電圧", param_name="base_voltage", input_width=5)
-        self._create_entry(label_name="内側のループ", param_name="inner_loop_num", input_width=5)
-        self._create_entry(label_name="外側のループ", param_name="outer_loop_num", input_width=5)
+        self._create_entry(label_name="内側のループ", param_name="inner_loop_idx", input_width=5)
+        self._create_entry(label_name="外側のループ", param_name="outer_loop_idx", input_width=5)
 
     def _create_entry(self, label_name: str, param_name: str, input_width: float):
         var: Variable = self.variables[param_name]

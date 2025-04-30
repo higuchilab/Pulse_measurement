@@ -118,8 +118,8 @@ class MeasureWindow(tk.Frame):
         file_path = ""
         if messagebox.askyesno("確認", "ファイル出力しますか？"):
             file_path = filedialog.asksaveasfilename(
-                defaultextension=".xlsx",
-                filetypes=[("Excel files", "*.xlsx"), ("All files", "*.*")],
+                defaultextension=".csv",
+                filetypes=[("Comma Separate files", "*.csv"), ("Excel files", "*.xlsx"), ("All files", "*.*")],
                 initialdir=f'C:/Users/higuchi/Desktop/{self.form_top.input_measure_person}',
                 initialfile=f'{self.form_top.input_material_name}_{self.form_top.input_sample_num}_{self.form_top.input_option}'
             )

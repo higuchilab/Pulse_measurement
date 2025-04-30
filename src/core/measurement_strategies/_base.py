@@ -14,7 +14,7 @@ class MeasurementStrategy(Protocol):
         """測定タイプを取得"""
         pass
 
-    def measure(measure_model: MeasureModelTemplete, dev: any) -> TwoTerminalOutput:
+    def measure(self, measure_model: MeasureModelTemplete, dev: any) -> TwoTerminalOutput:
         """測定を実行"""
         V_list = []
         A_list = []
@@ -49,8 +49,7 @@ class MeasurementStrategy(Protocol):
     
     def data_formatting(self, output: TwoTerminalOutput) -> any:
         """測定結果のフォーマットを整える"""
-        formatted_data = output
-        return formatted_data
+        return output
 
     def post_process(self, output: TwoTerminalOutput) -> None:
         """測定後の追加処理"""
