@@ -78,7 +78,6 @@ class EchoStateMeasurementStrategy(MeasurementStrategy):
         """
         plot_data(output)
 
-
         discrete_idx = np.repeat(
             self.input_array[:, 1],
             self.parameters.pulse_width / self.parameters.tick,
@@ -114,6 +113,22 @@ class EchoStateMeasurementStrategy(MeasurementStrategy):
         )
 
         return result
+
+    def get_header(self) -> list[str]:
+        """
+        echostate測定結果のヘッダーを取得\n
+        Returns:
+            list[str]: 測定結果のヘッダー
+        """
+        return [
+            "Voltage",
+            "Current",
+            "Time",
+            "Discrete",
+            "Node",
+            "InnerLoop",
+            "OuterLoop",
+        ]
 
     def post_process(self, output: TwoTerminalOutput) -> None:
         pass
