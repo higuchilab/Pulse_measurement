@@ -56,7 +56,7 @@ class MeasurementExecutor:
         except Exception as e:
             raise ConnectionError(f"Failed to connect device '{Constants.GPIB_ADDRESS}': {str(e)}")
 
-    def _save_results(self, output: TwoTerminalOutput) -> None:
+    def _save_results(self, output: TwoTerminalOutput, header: list[str] | None) -> None:
         """
         結果の保存
         file_pathのextensionによって保存形式を変更する
@@ -73,7 +73,7 @@ class MeasurementExecutor:
         if self.common_param.file_path.endswith(".xlsx"):
             output_to_excel_file(file_path=self.common_param.file_path, output=output)
         elif self.common_param.file_path.endswith(".csv"):
-            output_to_csv(file_path=self.common_param.file_path, output=output)
+            output_to_csv(file_path=self.common_param.file_path, output=output, header=header)
 
     def execute(self) -> TwoTerminalOutput:
         """測定の実行"""
@@ -89,8 +89,9 @@ class MeasurementExecutor:
 
             print("測定結果を保存中")
             output = self.strategy.data_formatting(output)
+            header = self.strategy.get_header()
             self.strategy.post_process(output)
-            self._save_results(output)
+            self._save_results(output, header)
             print("測定結果を保存しました")
 
             return output
@@ -124,7 +125,7 @@ def output_to_excel_file(file_path: str, output: TwoTerminalOutput):
     wb.close()
 
 
-def output_to_csv(file_path: str, output: NDArray, header: list[str] = None):
+def output_to_csv(file_path: str, output: NDArray, header: list[str] | None = None):
     """
     測定結果をcsvファイルに保存する関数
     headerを指定しない場合は、ヘッダー行は保存されません。

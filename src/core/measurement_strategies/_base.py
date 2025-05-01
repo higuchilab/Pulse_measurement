@@ -50,6 +50,20 @@ class MeasurementStrategy(Protocol):
     def data_formatting(self, output: TwoTerminalOutput) -> any:
         """測定結果のフォーマットを整える"""
         return output
+    
+    def get_header(self) -> list[str]:
+        """
+        測定結果のヘッダーを取得\n
+        デフォルトではNoneを返す\n
+        ヘッダーを指定する場合は、リストを返すこと\n
+        例: ["Time", "Voltage", "Current"]\n
+        ヘッダーを指定しない場合は、Noneを返すこと\n
+        例: None
+
+        Returns:
+            list[str]: 測定結果のヘッダー
+        """
+        return None
 
     def post_process(self, output: TwoTerminalOutput) -> None:
         """測定後の追加処理"""
