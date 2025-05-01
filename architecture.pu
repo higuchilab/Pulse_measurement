@@ -17,7 +17,7 @@ package "GUI" {
 
   class MeasureWindow {
     - statusbar: Statusbar
-    - form_top: common_input_form
+    - form_top: CommonInputForm
     - notebook: Notebook
     - tab_instances: list
     - execution_strategies: dict

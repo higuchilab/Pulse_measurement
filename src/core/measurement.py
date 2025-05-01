@@ -57,7 +57,10 @@ class MeasurementExecutor:
             raise ConnectionError(f"Failed to connect device '{Constants.GPIB_ADDRESS}': {str(e)}")
 
     def _save_results(self, output: TwoTerminalOutput) -> None:
-        """結果の保存"""
+        """
+        結果の保存
+        file_pathのextensionによって保存形式を変更する
+        """
         # history_param = HistoryParam(
         #     user_name=self.common_param.operator,
         #     sample_name=self.common_param.sample_name,
@@ -67,27 +70,34 @@ class MeasurementExecutor:
         # history_id = append_record_history(history_param)
         # save_data_to_database(history_id=history_id, output=output)
 
-        if self.common_param.file_path:
+        if self.common_param.file_path.endswith(".xlsx"):
+            output_to_excel_file(file_path=self.common_param.file_path, output=output)
+        elif self.common_param.file_path.endswith(".csv"):
             output_to_csv(file_path=self.common_param.file_path, output=output)
-            # output_to_excel_file(self.common_param.file_path, output=output)
 
     def execute(self) -> TwoTerminalOutput:
         """測定の実行"""
         try:
             self._connect_device()
             measure_model = self.strategy.create_measure_model()
-            print(measure_model)
+            print(f"測定モデル: {measure_model}")
+
             print("測定開始")
             output = self.strategy.measure(measure_model=measure_model, dev=self.device)
-            # output = measure(measure_model=measure_model, dev=self.device)
-            
             write_command("SBY", self.device)
             print("測定終了")
+
+            print("測定結果を保存中")
             output = self.strategy.data_formatting(output)
             self.strategy.post_process(output)
             self._save_results(output)
+            print("測定結果を保存しました")
 
             return output
+        
+        except Exception as e:
+            print(f"測定中にエラーが発生しました: {str(e)}")
+            raise e
 
         finally:
             if self.device:
