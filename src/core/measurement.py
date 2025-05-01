@@ -1,5 +1,6 @@
 import time
 import numpy as np
+from numpy.typing import NDArray
 
 from typing import TypedDict, Protocol, Any
 from abc import ABC, abstractmethod
@@ -93,96 +94,6 @@ class MeasurementExecutor:
                 write_command("SBY", self.device)
 
 
-# def measure(measure_model: MeasureModelTemplete, dev: any) -> TwoTerminalOutput:
-#     V_list = []
-#     A_list = []
-#     time_list = []
-
-#     start_perfcounter = time.perf_counter()
-#     target_time = 0.0
-#     for i, voltage in enumerate(measure_model.input_V_list):
-#         while True:
-#             elapsed_time = time.perf_counter() - start_perfcounter
-
-#             if elapsed_time >= target_time:
-#                 dev.write(f"SOV{voltage}")
-#                 dev.write("*TRG")
-#                 time_list.append(time.perf_counter() - start_perfcounter)
-                
-#                 A=dev.query("N?")
-#                 A_=float(A[3:-2])
-#                 A_list.append(A_)
-                
-#                 V=dev.query("SOV?")
-#                 V_=float(V[3:-2])
-#                 V_list.append(V_)
-#                 target_time += measure_model.tick
-#                 if i % 100 == 0:
-#                     graph(time_list, V_list, A_list)
-
-#                 break
-        
-
-#     output_data = TwoTerminalOutput(voltage=V_list, current=A_list, time=time_list)
-
-#     return output_data
-
-def echo_state_measure(
-    measure_model: MeasureModelTemplete, dev: any
-) -> EchoStateOutput:
-    """
-    入力信号同期を判定するための測定を行う関数
-    Args:
-        measure_model (MeasureModelTemplete): 測定モデル
-        dev (any): デバイスオブジェクト
-    Returns:
-        EchoStateOutput: 測定結果を格納したデータクラス
-    """
-    V_list = []
-    A_list = []
-    time_list = []
-    descrete_time_list = []
-    internal_loop_list = []
-    external_loop_list = []
-
-    start_perfcounter = time.perf_counter()
-    target_time = 0.0
-    for i, voltage in enumerate(measure_model.input_V_list):
-        while True:
-            elapsed_time = time.perf_counter() - start_perfcounter
-
-            if elapsed_time >= target_time:
-                dev.write(f"SOV{voltage}")
-                dev.write("*TRG")
-                time_list.append(time.perf_counter() - start_perfcounter)
-                
-                A=dev.query("N?")
-                A_=float(A[3:-2])
-                A_list.append(A_)
-                
-                V=dev.query("SOV?")
-                V_=float(V[3:-2])
-                V_list.append(V_)
-                
-                descrete_time_list.append(i)
-                internal_loop_list.append(measure_model.internal_loop)
-                external_loop_list.append(measure_model.external_loop)
-                
-                target_time += measure_model.tick
-                break
-
-    output_data = EchoStateOutput(
-        voltage=V_list,
-        current=A_list,
-        time=time_list,
-        descrete_time=descrete_time_list,
-        internal_loop=internal_loop_list,
-        external_loop=external_loop_list
-    )
-
-    return output_data
-
-
 def output_to_excel_file(file_path: str, output: TwoTerminalOutput):
     wb = Workbook()
     wb.save(file_path)
@@ -203,8 +114,23 @@ def output_to_excel_file(file_path: str, output: TwoTerminalOutput):
     wb.close()
 
 
-def output_to_csv(file_path: str, output):
-    np.savetxt(file_path, output)
+def output_to_csv(file_path: str, output: NDArray, header: list[str] = None):
+    """
+    測定結果をcsvファイルに保存する関数
+    headerを指定しない場合は、ヘッダー行は保存されません。
+    1行目にヘッダー行を追加する場合は、headerにリストを指定してください。
+    例: header=["Time", "Voltage", "Current"]
+
+    Parameters:
+        file_path (str): 保存先のファイルパス
+        output (NDArray): 測定結果の配列
+        header (list[str], optional): ヘッダー行のリスト。デフォルトはNone。
+    """
+    if header is not None:
+        header_str = ",".join(header)
+        np.savetxt(file_path, output, delimiter=",", header=header_str, comments="")
+    else:
+        np.savetxt(file_path, output, delimiter=",")
 
 
 def save_data_to_database(history_id: int, output: TwoTerminalOutput):
