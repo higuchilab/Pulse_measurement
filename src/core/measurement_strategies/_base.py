@@ -1,8 +1,10 @@
 import time
+import numpy as np
 from typing import Protocol
 from ..measurement_model import MeasureModelTemplete
 from ..data_processing import TwoTerminalOutput
 from src.visualization._graph import graph
+from ...utils import plot_data
 
 # 測定戦略のインターフェース
 class MeasurementStrategy(Protocol):
@@ -49,7 +51,17 @@ class MeasurementStrategy(Protocol):
     
     def data_formatting(self, output: TwoTerminalOutput) -> any:
         """測定結果のフォーマットを整える"""
-        return output
+        plot_data(output)
+        result = np.stack(
+            [
+                np.array([output.voltage]).reshape(-1),
+                np.array([output.current]).reshape(-1),
+                np.array([output.time]).reshape(-1)
+            ],
+            axis=1
+        )
+
+        return result
     
     def get_header(self) -> list[str]:
         """
@@ -63,7 +75,11 @@ class MeasurementStrategy(Protocol):
         Returns:
             list[str]: 測定結果のヘッダー
         """
-        return None
+        return [
+            "Voltage",
+            "Current",
+            "Time"
+        ]
 
     def post_process(self, output: TwoTerminalOutput) -> None:
         """測定後の追加処理"""

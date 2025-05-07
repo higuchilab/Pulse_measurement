@@ -53,5 +53,6 @@ class NarmaMeasurementStrategy(MeasurementStrategy):
         return MeasurementType.NARMA.value
 
     def post_process(self, output: TwoTerminalOutput) -> None:
-        plot_data(output)
+        pass
+        # plot_data(output)
         # NARMA特有の後処理があれば実装

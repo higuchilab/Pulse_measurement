@@ -22,5 +22,6 @@ class PulseMeasurementStrategy(MeasurementStrategy):
         return MeasurementType.PULSE.value
 
     def post_process(self, output: TwoTerminalOutput) -> None:
-        plot_data(output)
+        pass
+        # plot_data(output)
 

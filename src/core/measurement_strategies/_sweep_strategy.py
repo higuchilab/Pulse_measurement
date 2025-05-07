@@ -20,4 +20,5 @@ class SweepMeasurementStrategy(MeasurementStrategy):
         return MeasurementType.SWEEP.value
     
     def post_process(self, output: TwoTerminalOutput) -> None:
-        plot_data(output)
+        pass
+        # plot_data(output)
