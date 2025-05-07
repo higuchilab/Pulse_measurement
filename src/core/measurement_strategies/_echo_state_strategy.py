@@ -1,10 +1,9 @@
-import time
 import numpy as np
 
 from src.core.measurement_strategies._base import MeasurementStrategy
 
 from ._base import MeasurementStrategy
-from ..data_processing import TwoTerminalOutput, EchoStateOutput, EchoStateParam
+from ..data_processing import TwoTerminalOutput, EchoStateParam
 from ..measurement_model import MeasureModelTemplete, MeasureBlocks, PulseModel
 from ...utils import plot_data
 
@@ -40,37 +39,6 @@ class EchoStateMeasurementStrategy(MeasurementStrategy):
         # MeasurementTypeをインポートする必要があります。
         # もしMeasurementTypeを使用する場合は以下のように変更してください
         return MeasurementType.EchoState.value
-
-    # def measure(self, measure_model: MeasureModelTemplete, dev: any) -> EchoStateOutput:
-    #     V_list = []
-    #     A_list = []
-    #     time_list = []
-
-    #     start_perfcounter = time.perf_counter()
-    #     target_time = 0.0
-    #     for i, voltage in enumerate(measure_model.input_V_list):
-    #         while True:
-    #             elapsed_time = time.perf_counter() - start_perfcounter
-    #             if elapsed_time >= target_time:
-    #                 dev.write(f"SOV{voltage}")
-    #                 dev.write("*TRG")
-    #                 time_list.append(time.perf_counter() - start_perfcounter)
-
-    #                 A = dev.query("N?")
-    #                 A_ = float(A[3:-2])
-    #                 A_list.append(A_)
-
-    #                 V = dev.query("SOV?")
-    #                 V_ = float(V[3:-2])
-    #                 V_list.append(V_)
-    #                 target_time += measure_model.tick
-    #                 if i % 100 == 0:
-    #                     plot_data(time_list, V_list, A_list)
-
-    #                 break
-
-    #     output_data = EchoStateOutput(voltage=V_list, current=A_list, time=time_list)
-    #     return output_data
 
     def data_formatting(self, output: TwoTerminalOutput):
         """
