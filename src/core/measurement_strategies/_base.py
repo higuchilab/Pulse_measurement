@@ -22,6 +22,8 @@ class MeasurementStrategy(Protocol):
         A_list = []
         time_list = []
 
+        dev.write(f"SOV{0}")
+
         start_perfcounter = time.perf_counter()
         target_time = 0.0
         for i, voltage in enumerate(measure_model.input_V_list):
