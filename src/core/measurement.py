@@ -1,7 +1,9 @@
 import time
+import os
 import numpy as np
 from numpy.typing import NDArray
 
+from dotenv import load_dotenv
 from typing import TypedDict, Protocol, Any
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
@@ -21,10 +23,10 @@ from .measurement_strategies import (
 
 
 # 定数の分離
-class Constants:
-    VISA_DLL_PATH = r'C:\WINDOWS\system32\visa64.dll'
-    GPIB_ADDRESS = 'GPIB1::1::INSTR'
-    INTERVAL_TIME = 0.041463354054055365
+# class Constants:
+#     VISA_DLL_PATH = r'C:\WINDOWS\system32\visa64.dll'
+#     GPIB_ADDRESS = 'GPIB1::1::INSTR'
+#     INTERVAL_TIME = 0.041463354054055365
 
 # 測定タイプの列挙
 class MeasurementType(Enum):
@@ -47,14 +49,16 @@ class MeasurementExecutor:
 
     def _connect_device(self):
         """デバイスへの接続"""
+        load_dotenv()
+        gpib_address = os.environ['GPIB_ADDRESS_TWO_TERMINAl']
         try:
             self.device = device_connection(
-                visa_dll_path=Constants.VISA_DLL_PATH,
-                gpib_address=Constants.GPIB_ADDRESS
+                visa_dll_path=r'C:\WINDOWS\system32\visa64.dll',
+                gpib_address=gpib_address
             )
             prepare_device(self.device)
         except Exception as e:
-            raise ConnectionError(f"Failed to connect device '{Constants.GPIB_ADDRESS}': {str(e)}")
+            raise ConnectionError(f"Failed to connect device '{gpib_address}': {str(e)}")
 
     def _save_results(self, output: TwoTerminalOutput, header: list[str] | None) -> None:
         """
