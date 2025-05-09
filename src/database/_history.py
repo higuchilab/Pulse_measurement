@@ -4,19 +4,6 @@ from typing import Any, Literal, Optional, Sequence, TypedDict
 from ..core.data_processing import HistoryParam, ReferHistoryParam
 from ._commands import connect_database, connect_database_and_get_primary_key, fetch_unique_data, fetch_all_data_record
 
-def create_measures_types_table():
-    """
-    measure_typesテーブルを作成
-    """
-    sql = '''
-        CREATE TABLE IF NOT EXISTS measure_types (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL UNIQUE,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    '''
-    connect_database(sql)
-
 
 def append_record_measure_types(name: str):
     """
@@ -49,27 +36,6 @@ def fetch_measure_type_index(measure_type: Literal["NARMA", "2-terminal I-Vsweep
     '''
     id = fetch_unique_data(sql_fetch_material_id, (measure_type,))
     return id
-
-
-
-def create_history_table():
-    """
-    historyテーブルを作成
-    """
-    sql = '''
-        CREATE TABLE IF NOT EXISTS history (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL,
-            sample_id INTEGER NOT NULL,
-            measure_type_id INTEGER NOT NULL,
-            option TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users(id),
-            FOREIGN KEY (sample_id) REFERENCES samples(id),
-            FOREIGN KEY (measure_type_id) REFERENCES measures(id)
-        )
-    '''
-    connect_database(sql)
 
 
 def append_record_history(param: HistoryParam):
