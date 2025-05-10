@@ -1,11 +1,14 @@
 import sqlite3
 from typing import Any
 from contextlib import contextmanager
+from sqlalchemy import create_engine
+from src.database.models import Base
 
 from ..core.data_processing import PulseBlockParam, SweepParam
 
 # 共通のデータベース設定を定数として定義
 DATABASE_NAME = "example.db"
+DATABASE_URL = "sqlite:///example.db"
 
 # コンテキストマネージャーの作成
 @contextmanager
@@ -131,20 +134,10 @@ def fetch_all_data_column(sql: str, param: tuple=()) -> list[list[Any]]:
 
 def initialize_db() -> None:
     """
-    schemaを用いてデータベースを初期化
+    SQLAlchemyを使用してデータベースを初期化
     """
-    # データベースに接続
-    with sqlite3.connect("example.db") as conn:
-        
-        cursor = conn.cursor()
-
-        # schema.sqlファイルの内容を実行
-        with open('database/schema.sql', 'r') as schema_file:
-            schema_sql = schema_file.read()
-            cursor.executescript(schema_sql)
-
-        # 変更をコミットして接続を閉じる
-        conn.commit()
+    engine = create_engine(DATABASE_URL, echo=True)
+    Base.metadata.create_all(engine)
 
 
 def append_record_users(user_name):
