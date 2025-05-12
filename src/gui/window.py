@@ -137,6 +137,8 @@ class MeasureWindow(tk.Frame):
                 if not user:
                     user = User(name=common_param.operator)
                     session.add(user)
+                # ユーザーリストの更新
+                # 現在はここの処理でtkinterのリストボックスに直接値をセットしているが、データベースの内容と同期させるようにしたい
                 self.form_top.user_name_list = [u.name for u in session.query(User).all()]
 
             # マテリアルの追加
@@ -145,6 +147,8 @@ class MeasureWindow(tk.Frame):
                 if not material:
                     material = Material(name=common_param.material)
                     session.add(material)
+                # マテリアルリストの更新
+                # 現在はここの処理でtkinterのリストボックスに直接値をセットしているが、データベースの内容と同期させるようにしたい
                 self.form_top.materials = [m.name for m in session.query(Material).all()]
 
             # サンプルの追加
@@ -157,6 +161,8 @@ class MeasureWindow(tk.Frame):
                     if not sample:
                         sample = Sample(material_id=material.id, name=common_param.sample_name)
                         session.add(sample)
+                    # サンプルリストの更新
+                    # 現在はここの処理でtkinterのリストボックスに直接値をセットしているが、データベースの内容と同期させるようにしたい
                     self.form_top.samples = [
                         s.name for s in session.query(Sample).filter_by(material_id=material.id).all()
                     ]
