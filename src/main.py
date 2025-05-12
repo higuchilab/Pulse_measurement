@@ -11,6 +11,7 @@ from src.database._commands import initialize_db
 from src.database.models import MeasureType
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
+from src.database.session_manager import session_scope
 
 DATABASE_URL = "sqlite:///example.db"
 engine = create_engine(DATABASE_URL)
@@ -20,18 +21,11 @@ def append_record_measure_types():
     """
     測定タイプをデータベースに追加
     """
-    session = Session()
-    try:
+    with session_scope() as session:
         measure_types = ["NARMA", "2-terminal I-Vsweep", "2-terminal Pulse"]
         for measure_type in measure_types:
             if not session.query(MeasureType).filter_by(name=measure_type).first():
                 session.add(MeasureType(name=measure_type))
-        session.commit()
-    except Exception as e:
-        session.rollback()
-        print(f"Error appending measure types: {e}")
-    finally:
-        session.close()
 
 def main():
     # データベースの初期化

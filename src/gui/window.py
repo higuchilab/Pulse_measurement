@@ -24,15 +24,6 @@ from src.gui.widgets import (
     HistoryWindow,
 )
 
-from src.database import (
-    append_record_users,
-    refer_users_table,
-    append_record_materials,
-    refer_materials_table,
-    append_record_samples,
-    refer_samples_table,
-)
-
 from src.core import CommonParameters
 
 from src.core.execution_strategies import (
@@ -43,6 +34,7 @@ from src.core.execution_strategies import (
 )
 
 from src.utils import timer
+from src.database.session_manager import session_scope
 
 # SQLAlchemyのエンジンとセッションを作成
 DATABASE_URL = "sqlite:///example.db"
@@ -129,8 +121,7 @@ class MeasureWindow(tk.Frame):
         """
         データベースにデータを追加し、関連するリストを更新する
         """
-        session = Session()
-        try:
+        with session_scope() as session:
             # ユーザーの追加
             if common_param.operator:
                 user = session.query(User).filter_by(name=common_param.operator).first()
@@ -166,15 +157,6 @@ class MeasureWindow(tk.Frame):
                     self.form_top.samples = [
                         s.name for s in session.query(Sample).filter_by(material_id=material.id).all()
                     ]
-
-            # コミットして変更を保存
-            session.commit()
-
-        except Exception as e:
-            session.rollback()
-            print(f"Error updating database records: {e}")
-        finally:
-            session.close()
 
     def click_exe_button(self):
         """実行ボタン押下後の処理"""
