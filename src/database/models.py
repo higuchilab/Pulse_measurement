@@ -169,6 +169,10 @@ class MeasureType(Base):
 
 
 class History(Base):
+    """
+    測定履歴\n
+    測定者、物質名、試料名、測定名、備考を記録する
+    """
     __tablename__ = "history"
 
     id: Mapped[uuid.UUID] = mapped_column(
@@ -181,7 +185,7 @@ class History(Base):
     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
     sample_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("samples.id"), nullable=False)
     measure_type_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("measure_types.id"), nullable=False)
-    option: Mapped[str] = mapped_column(Text, nullable=True)
+    discription: Mapped[str] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(ZoneInfo("Asia/Tokyo")),
@@ -226,6 +230,31 @@ class FourTerminalResult(Base):
     current_1: Mapped[float] = mapped_column(Float, nullable=True)
     voltage_2: Mapped[float] = mapped_column(Float, nullable=True)
     current_2: Mapped[float] = mapped_column(Float, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(ZoneInfo("Asia/Tokyo")),
+        nullable=False,
+    )
+
+class EchoStateResult(Base):
+    """
+    echo state測定結果
+    """
+    __tablename__ = "echo_state_results"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid,
+        primary_key=True,
+        default=uuid.uuid4,
+        unique=True,
+        nullable=False,
+    )
+    history_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("history.id"), nullable=False)
+    elapsed_time: Mapped[float] = mapped_column(Float, nullable=True)
+    discrete_time: Mapped[int] = mapped_column(Integer, nullable=True)
+    node_id: Mapped[int] = mapped_column(Integer, nullable=True)
+    voltage: Mapped[float] = mapped_column(Float, nullable=True)
+    current: Mapped[float] = mapped_column(Float, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(ZoneInfo("Asia/Tokyo")),
