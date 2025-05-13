@@ -4,7 +4,7 @@ from typing import Literal
 
 from ._components import TreeViewBlocks
 from ._sub_tab import WindowSub
-from .._common_item import make_check_buttons, ParameterInputsForm, TextVariables, TempletesWindow
+from .._common_item import make_check_buttons, TempletesWindow, ParameterInputsForm, BaseParameterInputs
 from .....core import PulseBlockParam, MeasureBlocks
 from .....database import append_record_pulse_templetes, refer_pulse_templetes_table
 
@@ -17,42 +17,27 @@ class TabPulse(Frame):
         super().__init__(master=master)
         self.__pulse_blocks = MeasureBlocks()
 
-        self.__max_voltage = DoubleVar()
-        self.__max_voltage.trace_add("write", lambda *args: self.update_block_param(*args, "V_top"))
-        self.__pulse_width = DoubleVar()
-        self.__pulse_width.trace_add("write", lambda *args: self.update_block_param(*args, "top_time"))
-        self.__min_voltage = DoubleVar()
-        self.__min_voltage.trace_add("write", lambda *args: self.update_block_param(*args, "V_base"))
-        self.__off_width = DoubleVar()
-        self.__off_width.trace_add("write", lambda *args: self.update_block_param(*args, "base_time"))
-        self.__loop_num = IntVar()
-        self.__loop_num.trace_add("write", lambda *args: self.update_block_param(*args, "loop"))
-        self.__interval = DoubleVar()
-        self.__interval.trace_add("write", lambda *args: self.update_block_param(*args, "interval"))
+        self.variables = {
+            "V_top [V]": DoubleVar(),
+            "top_time [s]": DoubleVar(),
+            "V_base [V]": DoubleVar(),
+            "base_time [s]": DoubleVar(),
+            "ループ回数": IntVar(),
+            "おしり [s]": DoubleVar(),
+        }
 
-        param_names = [
-            "V_top [V]",
-            "top_time [s]",
-            "V_bot [V]",
-            "bot_time [s]",
-            "ループ回数",
-            "おしり [s]"
-            ]
-        variables = [
-            self.__max_voltage,
-            self.__pulse_width,
-            self.__min_voltage,
-            self.__off_width,
-            self.__loop_num,
-            self.__interval
-        ]
-        text_variables = TextVariables(param_names=param_names, variables=variables)
+        self.parameter_inputs = BaseParameterInputs(
+            master=self,
+            param_names=list(self.variables.keys()),
+            variables=list(self.variables.values())
+        )
+        self.parameter_inputs.pack(anchor=tk.W, expand=True)
 
         self.__tab_pulse_left = TabPulseLeft(master=self, measure_blocks=self.__pulse_blocks)
         self.__tab_pulse_left.pack(side="left", expand=True, padx=5)
         self.tree.bind("<<TreeviewSelect>>", self.on_tree_select)
 
-        self.__tab_pulse_center = TabPulseCenter(self, text_variables)
+        self.__tab_pulse_center = TabPulseCenter(self, self.variables)
         self.__tab_pulse_center.pack(side="left", expand=True, padx=5)
 
         # self.__tab_pulse_right = TabPulseRight(master=self)
@@ -68,51 +53,51 @@ class TabPulse(Frame):
 
     @property
     def max_voltage(self) -> float:
-        return self.__max_voltage.get()
+        return self.variables["V_top [V]"].get()
     
     @max_voltage.setter
     def max_voltage(self, value: float):
-        self.__max_voltage.set(value)
+        self.variables["V_top [V]"].set(value)
     
     @property
     def pulse_width(self) -> float:
-        return self.__pulse_width.get()
+        return self.variables["top_time [s]"].get()
     
     @pulse_width.setter
     def pulse_width(self, value: float):
-        self.__pulse_width.set(value)
+        self.variables["top_time [s]"].set(value)
 
     @property
     def min_voltage(self) -> float:
-        return self.__min_voltage.get()
+        return self.variables["V_base [V]"].get()
     
     @min_voltage.setter
     def min_voltage(self, value: float):
-        self.__min_voltage.set(value)
+        self.variables["V_base [V]"].set(value)
 
     @property
     def off_width(self) -> float:
-        return self.__off_width.get()
+        return self.variables["base_time [s]"].get()
     
     @off_width.setter
     def off_width(self, value: float):
-        self.__off_width.set(value)
+        self.variables["base_time [s]"].set(value)
 
     @property
     def loop_num(self) -> int:
-        return self.__loop_num.get()
+        return self.variables["ループ回数"].get()
     
     @loop_num.setter
     def loop_num(self, value: int):
-        self.__loop_num.set(value)
+        self.variables["ループ回数"].set(value)
 
     @property
     def interval(self) -> float:
-        return self.__interval.get()
+        return self.variables["おしり [s]"].get()
     
     @interval.setter
     def interval(self, value: float):
-        self.__interval.set(value)
+        self.variables["おしり [s]"].set(value)
     
     def on_tree_select(self, event):
         selected_block = self.pulse_blocks.blocks[self.tree.index(self.tree.selection()[0])]
@@ -151,7 +136,7 @@ class TabPulseCenter(Frame):
     """
     パルスタブの中央
     """
-    def __init__(self, master: Misc, text_variables: TextVariables):
+    def __init__(self, master: Misc, text_variables: dict):
         super().__init__(master=master)
         self.__parameter_inputs = PulseParameterInputs(self, text_variables)
         self.__parameter_inputs.pack(anchor=tk.W, expand=True)
@@ -161,7 +146,7 @@ class PulseTempletesWindow(TempletesWindow):
     """
     パルスブロックの設定値のテンプレートを表示するサブウィンドウ
     """
-    def __init__(self, master: Misc, main_window: ParameterInputsForm, columns: list[str]):
+    def __init__(self, master: Misc, main_window: BaseParameterInputs, columns: list[str]):
         super().__init__(master, main_window, columns)
 
         rows = refer_pulse_templetes_table()
@@ -169,18 +154,19 @@ class PulseTempletesWindow(TempletesWindow):
             self.tree.insert("", "end", values=row)
 
 
+# ParameterInputsFormを継承したクラスを作成し、そこにPulseParameterInputsを渡す
 class PulseParameterInputs(ParameterInputsForm):
     """
     パルスブロックの設定値の入力フィールド
     """
-    def __init__(self, master: Misc, text_variables: TextVariables):
-        super().__init__(master, text_variables)
-        self.__value_max_voltage = text_variables.variables[0]
-        self.__value_pulse_width = text_variables.variables[1]
-        self.__value_min_voltage = text_variables.variables[2]
-        self.__value_off_width = text_variables.variables[3]
-        self.__value_loop_num = text_variables.variables[4]
-        self.__value_interval = text_variables.variables[5]
+    def __init__(self, master: Misc, text_variables: dict):
+        super().__init__(master, param_names=list(text_variables.keys()), variables=list(text_variables.values()))
+        self.__value_max_voltage = text_variables["V_top [V]"]
+        self.__value_pulse_width = text_variables["top_time [s]"]
+        self.__value_min_voltage = text_variables["V_base [V]"]
+        self.__value_off_width = text_variables["base_time [s]"]
+        self.__value_loop_num = text_variables["ループ回数"]
+        self.__value_interval = text_variables["おしり [s]"]
 
     @property
     def top_voltage(self) -> float:
@@ -301,5 +287,3 @@ class TabPulseRight(Frame):
     def __init__(self, master: Misc):
         super().__init__(master=master)
         make_check_buttons(self)
-
-
