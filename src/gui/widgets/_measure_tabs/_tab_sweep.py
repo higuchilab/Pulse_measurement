@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import Frame, DoubleVar, IntVar, Misc, Variable
+from tkinter import Frame, DoubleVar, IntVar, Misc
 from typing import Literal
 
 from ._common_item import ParameterInputsForm, TempletesWindow, TextVariables, RadioButtonForm
@@ -129,13 +129,13 @@ class SweepTempletesWindow(TempletesWindow):
 
 
 class SweepParameterInputs(ParameterInputsForm):
-    def __init__(self, master: Misc, param_names: list[str], variables: list[Variable]):
-        super().__init__(master, param_names=param_names, variables=variables)
-        self.__value_max_voltage = variables[0]
-        self.__value_bottom_voltage = variables[1]
-        self.__value_voltage_step = variables[2]
-        self.__value_loop_num = variables[3]
-        self.__value_tick = variables[4]
+    def __init__(self, master: Misc, text_variables: TextVariables):
+        super().__init__(master, text_variables)
+        self.__value_max_voltage = text_variables.variables[0]
+        self.__value_bottom_voltage = text_variables.variables[1]
+        self.__value_voltage_step = text_variables.variables[2]
+        self.__value_loop_num = text_variables.variables[3]
+        self.__value_tick = text_variables.variables[4]
 
     @property
     def top_voltage(self) -> float:

@@ -220,10 +220,9 @@ class TextVariables:
 
 
 class ParameterInputsForm(Frame, metaclass=ABCMeta):
-
-    def __init__(self, master, param_names: list[str], variables: list[Variable]):
+    def __init__(self, master, text_variables: TextVariables):
         super().__init__(master=master)
-        self.__param_names = param_names
+        self.__param_names = text_variables.param_names
         self.__top_label = Label(master=self, text="パラメーター")
         self.__top_label.pack(anchor=tk.W, side="top")
         self.__select_from_template_button = Button(
@@ -234,20 +233,13 @@ class ParameterInputsForm(Frame, metaclass=ABCMeta):
         )
         self.__select_from_template_button.pack(anchor=tk.W, side="top", padx=10)
 
-        self.__parameter_inputs = BaseParameterInputs(
-            master=self,
-            param_names=param_names,
-            variables=variables,
-        )
-        self.__parameter_inputs.pack(anchor=tk.W, expand=True)
-
-        # for param_name, variable in zip(
-        #     text_variables.param_names, text_variables.variables
-        # ):
-        #     entry_form = EntryForm(
-        #         label_name=param_name, input_width=5, master=self, value=variable
-        #     )
-        #     entry_form.pack(anchor=tk.W, side="top", padx=10)
+        for param_name, variable in zip(
+            text_variables.param_names, text_variables.variables
+        ):
+            entry_form = EntryForm(
+                label_name=param_name, input_width=5, master=self, value=variable
+            )
+            entry_form.pack(anchor=tk.W, side="top", padx=10)
 
         self.__register_templete_button = Button(
             master=self,
@@ -301,24 +293,3 @@ class TempletesWindow(Toplevel, metaclass=ABCMeta):
                 values
             )  # メインウィンドウのメソッドを呼び出して値を更新
         self.destroy()
-
-
-class BaseParameterInputs(Frame):
-    """
-    共通のパラメーター入力フォーム
-    """
-    def __init__(self, master, param_names: list[str], variables: list[Variable]):
-        super().__init__(master=master)
-        self.variables = {name: var for name, var in zip(param_names, variables)}
-
-        for param_name, variable in self.variables.items():
-            self._create_entry(label_name=param_name, variable=variable)
-
-    def _create_entry(self, label_name: str, variable: Variable):
-        entry = EntryForm(
-            label_name=label_name,
-            input_width=5,
-            master=self,
-            value=variable
-        )
-        entry.pack(anchor=tk.W, side="top", padx=10)
