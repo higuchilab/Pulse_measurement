@@ -1,11 +1,14 @@
 import sqlite3
 from typing import Any
 from contextlib import contextmanager
+from sqlalchemy import create_engine
+from src.database.models import Base
 
 from ..core.data_processing import PulseBlockParam, SweepParam
 
 # 共通のデータベース設定を定数として定義
 DATABASE_NAME = "example.db"
+DATABASE_URL = "sqlite:///example.db"
 
 # コンテキストマネージャーの作成
 @contextmanager
@@ -131,31 +134,10 @@ def fetch_all_data_column(sql: str, param: tuple=()) -> list[list[Any]]:
 
 def initialize_db() -> None:
     """
-    schemaを用いてデータベースを初期化
+    SQLAlchemyを使用してデータベースを初期化
     """
-    # データベースに接続
-    with sqlite3.connect("example.db") as conn:
-        
-        cursor = conn.cursor()
-
-        # schema.sqlファイルの内容を実行
-        with open('database/schema.sql', 'r') as schema_file:
-            schema_sql = schema_file.read()
-            cursor.executescript(schema_sql)
-
-        # 変更をコミットして接続を閉じる
-        conn.commit()
-
-
-def create_users_table():
-    sql = '''
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL UNIQUE,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    '''
-    connect_database(sql)
+    engine = create_engine(DATABASE_URL, echo=True)
+    Base.metadata.create_all(engine)
 
 
 def append_record_users(user_name):
@@ -180,17 +162,6 @@ def refer_users_table():
     name_list = fetch_all_data(sql)
 
     return name_list
-    
-
-def create_materials_table():
-    sql = '''
-        CREATE TABLE IF NOT EXISTS materials (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL UNIQUE,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    '''
-    connect_database(sql)
 
 
 def append_record_materials(material_name):
@@ -215,23 +186,6 @@ def refer_materials_table():
     material_list = fetch_all_data(sql)
 
     return material_list
-
-
-def create_samples_table():
-    """
-    samplesテーブルを作成
-    """
-    sql = '''
-        CREATE TABLE IF NOT EXISTS samples (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            material_id INTEGER NOT NULL,
-            sample_name TEXT NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (material_id) REFERENCES materials(id),
-            UNIQUE (material_id, sample_name)
-        )
-    '''
-    connect_database(sql)
 
 
 def append_record_samples(material_name, sample_name):
@@ -270,26 +224,6 @@ def refer_samples_table(material_name) -> list[str]:
     return sample_list
 
 
-def create_pulse_templetes_table():
-    """
-    pulse_templetesテーブルを作成
-    """
-    sql = '''
-        CREATE TABLE IF NOT EXISTS pulse_templetes (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            top_voltage REAL NOT NULL,
-            top_time REAL NOT NULL CHECK(top_time >= 0),
-            base_voltage REAL NOT NULL,
-            base_time REAL NOT NULL CHECK(base_time >= 0),
-            loop INTEGER NOT NULL CHECK(loop > 0),
-            interval_time REAL NOT NULL CHECK(interval_time >= 0),
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            UNIQUE (top_voltage, top_time, base_voltage, base_time, loop, interval_time)
-        )
-    '''
-    connect_database(sql)
-
-
 def append_record_pulse_templetes(param: PulseBlockParam):
     """
     pulse_templetesテーブルにデータを挿入する
@@ -312,25 +246,6 @@ def refer_pulse_templetes_table() -> list[tuple]:
     pulse_templete_list = fetch_all_data_record(sql)
 
     return pulse_templete_list
-
-
-def create_sweep_templetes_table():
-    """
-    sweep_templetesテーブルを作成
-    """
-    sql = '''
-        CREATE TABLE IF NOT EXISTS sweep_templetes (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            top_voltage REAL NOT NULL,
-            bottom_voltage REAL NOT NULL,
-            voltage_step REAL NOT NULL CHECK(voltage_step > 0),
-            loop INTEGER NOT NULL CHECK(loop > 0),
-            tick_time REAL NOT NULL CHECK(tick_time >= 0),
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            UNIQUE (top_voltage, bottom_voltage, voltage_step, loop, tick_time)
-        )
-    '''
-    connect_database(sql)
 
 
 def append_record_sweep_templetes(param: SweepParam):

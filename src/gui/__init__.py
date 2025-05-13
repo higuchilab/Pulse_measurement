@@ -1,4 +1,4 @@
-from .window_narma import Application
+from .window import Application
 
 __all__ = [
     "Application",

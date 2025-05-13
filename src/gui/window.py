@@ -3,6 +3,9 @@ from tkinter import messagebox, filedialog
 from tkinter.ttk import Notebook
 import sys
 from pathlib import Path
+from sqlalchemy.orm import sessionmaker
+from src.database.models import User, Material, Sample
+from sqlalchemy import create_engine
 
 # from abc import ABC, abstractmethod
 
@@ -21,15 +24,6 @@ from src.gui.widgets import (
     HistoryWindow,
 )
 
-from src.database import (
-    append_record_users,
-    refer_users_table,
-    append_record_materials,
-    refer_materials_table,
-    append_record_samples,
-    refer_samples_table,
-)
-
 from src.core import CommonParameters
 
 from src.core.execution_strategies import (
@@ -40,6 +34,12 @@ from src.core.execution_strategies import (
 )
 
 from src.utils import timer
+from src.database.session_manager import session_scope
+
+# SQLAlchemyのエンジンとセッションを作成
+DATABASE_URL = "sqlite:///example.db"
+engine = create_engine(DATABASE_URL)
+Session = sessionmaker(bind=engine)
 
 
 class Application(tk.Frame):
@@ -118,17 +118,45 @@ class MeasureWindow(tk.Frame):
         )
 
     def _update_database_records(self, common_param: CommonParameters) -> None:
-        if common_param.operator:
-            append_record_users(common_param.operator)
-            self.form_top.user_name_list = refer_users_table()
+        """
+        データベースにデータを追加し、関連するリストを更新する
+        """
+        with session_scope() as session:
+            # ユーザーの追加
+            if common_param.operator:
+                user = session.query(User).filter_by(name=common_param.operator).first()
+                if not user:
+                    user = User(name=common_param.operator)
+                    session.add(user)
+                # ユーザーリストの更新
+                # 現在はここの処理でtkinterのリストボックスに直接値をセットしているが、データベースの内容と同期させるようにしたい
+                self.form_top.user_name_list = [u.name for u in session.query(User).all()]
 
-        if common_param.material:
-            append_record_materials(common_param.material)
-            self.form_top.materials = refer_materials_table()
+            # マテリアルの追加
+            if common_param.material:
+                material = session.query(Material).filter_by(name=common_param.material).first()
+                if not material:
+                    material = Material(name=common_param.material)
+                    session.add(material)
+                # マテリアルリストの更新
+                # 現在はここの処理でtkinterのリストボックスに直接値をセットしているが、データベースの内容と同期させるようにしたい
+                self.form_top.materials = [m.name for m in session.query(Material).all()]
 
-        if common_param.sample_name:
-            append_record_samples(common_param.material, common_param.sample_name)
-            self.form_top.samples = refer_samples_table(common_param.material)
+            # サンプルの追加
+            if common_param.sample_name:
+                material = session.query(Material).filter_by(name=common_param.material).first()
+                if material:
+                    sample = session.query(Sample).filter_by(
+                        material_id=material.id, name=common_param.sample_name
+                    ).first()
+                    if not sample:
+                        sample = Sample(material_id=material.id, name=common_param.sample_name)
+                        session.add(sample)
+                    # サンプルリストの更新
+                    # 現在はここの処理でtkinterのリストボックスに直接値をセットしているが、データベースの内容と同期させるようにしたい
+                    self.form_top.samples = [
+                        s.name for s in session.query(Sample).filter_by(material_id=material.id).all()
+                    ]
 
     def click_exe_button(self):
         """実行ボタン押下後の処理"""
