@@ -96,4 +96,4 @@ class TreeViewHistory(Treeview):
             history_data = session.scalars(stmt).all()
             
             for row in history_data:
-                self.insert("", "end", values=(row.id, row.measure_type_id, row.user_id, row.sample_id, row.option))
+                self.insert("", "end", values=(row.id, row.measure_type_id, row.user_id, row.sample_id, row.discription))

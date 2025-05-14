@@ -214,6 +214,16 @@ class History(Base):
         back_populates="histories",
         foreign_keys=[measure_type_id],
     )
+    two_terminal_results: Mapped[list["TwoTerminalResult"]] = relationship(
+        back_populates="history"
+    )
+    param_history_pulse_blocks: Mapped[list["ParamHistoryPulseBlock"]] = relationship(
+        back_populates="history"
+    )
+    param_history_pulse_cycles: Mapped[list["ParamHistoryPulseCycle"]] = relationship(
+        back_populates="history"
+    )
+
 
 
 class TwoTerminalResult(Base):
@@ -234,6 +244,10 @@ class TwoTerminalResult(Base):
         DateTime(timezone=True),
         default=lambda: datetime.now(ZoneInfo("Asia/Tokyo")),
         nullable=False,
+    )
+    history: Mapped["History"] = relationship(
+        back_populates="two_terminal_results",
+        foreign_keys=[history_id]
     )
 
 
@@ -339,6 +353,9 @@ class ParamHistoryPulseBlock(Base):
         default=lambda: datetime.now(ZoneInfo("Asia/Tokyo")),
         nullable=False,
     )
+    history: Mapped["History"] = relationship(
+        back_populates="param_history_pulse_blocks"
+    )
 
 
 class ParamHistoryPulseCycle(Base):
@@ -364,6 +381,10 @@ class ParamHistoryPulseCycle(Base):
         default=lambda: datetime.now(ZoneInfo("Asia/Tokyo")),
         nullable=False,
     )
+    history: Mapped["History"] = relationship(
+        back_populates="param_history_pulse_cycles"
+    )
+
 
 class ParamHistoryEchoState(Base):
     """

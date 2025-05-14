@@ -37,10 +37,17 @@ class PulseMeasurementStrategy(MeasurementStrategy):
         # データベースに保存する処理を実装
         with session_scope() as session:
             # ここでデータベースに保存するレコードを定義
+            # print(f"user:{common_param.operator}")
+            # print(f"sample: {common_param.sample_name}")
+            # print(f"measure_type: {self.get_measurement_type()}")
+            # print(f"discription: {common_param.option}")
+            user = session.query(User).filter_by(name=common_param.operator).first()
+            sample = session.query(Sample).filter_by(name=common_param.sample_name).first()
+            measure_type = session.query(MeasureType).filter_by(name=self.get_measurement_type()).first()
             history = History(
-                user=common_param.operator,
-                sample=common_param.sample_name,
-                measure_type_id=self.get_measurement_type(),
+                user=user,
+                sample=sample,
+                measure_type=measure_type,
                 discription=common_param.option
             )
             # rowは[voltage, current, elapsed_time]の形式
@@ -57,10 +64,12 @@ class PulseMeasurementStrategy(MeasurementStrategy):
                 ParamHistoryPulseBlock(
                     history=history,
                     order_id=i,
+                    top_voltage=block.V_top,
                     top_time=block.top_time,
+                    base_voltage=block.V_base,
                     base_time=block.base_time,
                     loop=block.loop,
-                    interval=block.interval
+                    interval_time=block.interval
                 )
                 for i, block in enumerate(self.parameters["measure_blocks"].blocks)
             ]
@@ -74,7 +83,7 @@ class PulseMeasurementStrategy(MeasurementStrategy):
                 )
                 for i, cycle in enumerate(self.parameters["measure_blocks"].cycles)
             ]
-            session.add_all(history, two_terminal_result, param_history_blocks, param_history_cycles)
+            session.add_all([history] + two_terminal_result + param_history_blocks + param_history_cycles)
             session.commit()
         return None
 
