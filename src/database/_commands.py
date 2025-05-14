@@ -3,6 +3,9 @@ from typing import Any
 from contextlib import contextmanager
 from sqlalchemy import create_engine
 from src.database.models import Base
+from sqlalchemy.orm import sessionmaker
+from src.database.models import PulseTemplete
+from src.database.session_manager import session_scope
 
 from ..core.data_processing import PulseBlockParam, SweepParam
 
@@ -226,12 +229,55 @@ def refer_samples_table(material_name) -> list[str]:
 
 def append_record_pulse_templetes(param: PulseBlockParam):
     """
-    pulse_templetesテーブルにデータを挿入する
+    pulse_templetesテーブルにデータを挿入する (SQLAlchemy版)
+
+    Parameters
+    ----------
+    param : PulseBlockParam
+        パルスブロックのパラメータ
     """
-    sql = '''
-        INSERT OR IGNORE INTO pulse_templetes (top_voltage, top_time, base_voltage, base_time, loop, interval_time) VALUES (?, ?, ?, ?, ?, ?)
-    '''
-    connect_database(sql, (param.top_voltage, param.top_time, param.base_voltage, param.base_time, param.loop, param.interval_time))
+    with session_scope() as session:
+        # 既存のレコードを確認
+        existing_record = session.query(PulseTemplete).filter_by(
+            top_voltage=param.top_voltage,
+            top_time=param.top_time,
+            base_voltage=param.base_voltage,
+            base_time=param.base_time,
+            loop=param.loop,
+            interval_time=param.interval_time
+        ).first()
+
+        # レコードが存在しない場合のみ追加
+        if not existing_record:
+            new_record = PulseTemplete(
+                top_voltage=param.top_voltage,
+                top_time=param.top_time,
+                base_voltage=param.base_voltage,
+                base_time=param.base_time,
+                loop=param.loop,
+                interval_time=param.interval_time
+            )
+            session.add(new_record)
+
+
+# def append_record_pulse_templetes(param: PulseBlockParam):
+#     """
+#     pulse_templetesテーブルにデータを挿入する
+#     """
+#     sql = """
+#         INSERT OR IGNORE INTO pulse_templetes (top_voltage, top_time, base_voltage, base_time, loop, interval_time) VALUES (?, ?, ?, ?, ?, ?)
+#     """
+#     connect_database(
+#         sql,
+#         (
+#             param.top_voltage,
+#             param.top_time,
+#             param.base_voltage,
+#             param.base_time,
+#             param.loop,
+#             param.interval_time,
+#         ),
+#     )
 
 
 def refer_pulse_templetes_table() -> list[tuple]:
