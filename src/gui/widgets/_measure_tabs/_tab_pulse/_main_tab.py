@@ -251,7 +251,6 @@ class PulseParameterInputs(ParameterInputsForm):
             interval_time=self.interval
             )
         append_record_pulse_templetes(pulse_block_param)
-        print("テンプレートに追加しました")
 
 
 class TabPulseLeft(Frame):

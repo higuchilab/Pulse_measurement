@@ -258,26 +258,7 @@ def append_record_pulse_templetes(param: PulseBlockParam):
                 interval_time=param.interval_time
             )
             session.add(new_record)
-
-
-# def append_record_pulse_templetes(param: PulseBlockParam):
-#     """
-#     pulse_templetesテーブルにデータを挿入する
-#     """
-#     sql = """
-#         INSERT OR IGNORE INTO pulse_templetes (top_voltage, top_time, base_voltage, base_time, loop, interval_time) VALUES (?, ?, ?, ?, ?, ?)
-#     """
-#     connect_database(
-#         sql,
-#         (
-#             param.top_voltage,
-#             param.top_time,
-#             param.base_voltage,
-#             param.base_time,
-#             param.loop,
-#             param.interval_time,
-#         ),
-#     )
+            print("テンプレートを追加しました")
 
 
 def refer_pulse_templetes_table() -> list[tuple]:
