@@ -193,9 +193,9 @@ class History(Base):
         unique=True,
         nullable=False,
     )
-    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
-    sample_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("samples.id"), nullable=False)
-    measure_type_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("measure_types.id"), nullable=False)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=True)
+    sample_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("samples.id"), nullable=True)
+    measure_type_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("measure_types.id"), nullable=True)
     discription: Mapped[str] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
