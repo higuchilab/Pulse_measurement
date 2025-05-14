@@ -32,6 +32,9 @@ class User(Base):
         unique=True,
         nullable=False
     )
+    histories: Mapped[list["History"]] = relationship(
+        back_populates="user",
+    )
 
 
 class Material(Base):
@@ -78,11 +81,16 @@ class Sample(Base):
         ForeignKey("materials.id"),
         nullable=False
     )
-    material: Mapped["Material"] = relationship(back_populates="samples")
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(ZoneInfo("Asia/Tokyo")),
         nullable=False,
+    )
+    material: Mapped["Material"] = relationship(
+        back_populates="samples"
+    )
+    histories: Mapped[list["History"]] = relationship(
+        back_populates="sample"
     )
 
 
@@ -166,6 +174,9 @@ class MeasureType(Base):
         default=lambda: datetime.now(ZoneInfo("Asia/Tokyo")),
         nullable=False,
     )
+    histories: Mapped[list["History"]] = relationship(
+        back_populates="measure_type",
+    )
 
 
 class History(Base):
@@ -182,14 +193,26 @@ class History(Base):
         unique=True,
         nullable=False,
     )
-    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
-    sample_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("samples.id"), nullable=False)
-    measure_type_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("measure_types.id"), nullable=False)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=True)
+    sample_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("samples.id"), nullable=True)
+    measure_type_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("measure_types.id"), nullable=True)
     discription: Mapped[str] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(ZoneInfo("Asia/Tokyo")),
         nullable=False,
+    )
+    user: Mapped["User"] = relationship(
+        back_populates="histories",
+        foreign_keys=[user_id],
+    )
+    sample: Mapped["Sample"] = relationship(
+        back_populates="histories",
+        foreign_keys=[sample_id],
+    )
+    measure_type: Mapped["MeasureType"] = relationship(
+        back_populates="histories",
+        foreign_keys=[measure_type_id],
     )
 
 
@@ -236,7 +259,8 @@ class FourTerminalResult(Base):
         nullable=False,
     )
 
-class EchoStateResult(Base):
+
+class TwoTerminalEchoStateResult(Base):
     """
     echo state測定結果
     """
@@ -255,6 +279,114 @@ class EchoStateResult(Base):
     node_id: Mapped[int] = mapped_column(Integer, nullable=True)
     voltage: Mapped[float] = mapped_column(Float, nullable=True)
     current: Mapped[float] = mapped_column(Float, nullable=True)
+    inner_loop_idx: Mapped[int] = mapped_column(Integer, nullable=True)
+    outer_loop_idx: Mapped[int] = mapped_column(Integer, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(ZoneInfo("Asia/Tokyo")),
+        nullable=False,
+    )
+
+class ParamHistorySweep(Base):
+    """
+    sweep測定時のパラメータ履歴
+    """
+    __tablename__ = "param_history_sweep"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid,
+        primary_key=True,
+        default=uuid.uuid4,
+        unique=True,
+        nullable=False,
+    )
+    history_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("history.id"), nullable=False)
+    top_voltage: Mapped[float] = mapped_column(Float, nullable=False)
+    bottom_voltage: Mapped[float] = mapped_column(Float, nullable=False)
+    voltage_step: Mapped[float] = mapped_column(Float, nullable=False)
+    loop: Mapped[int] = mapped_column(Integer, nullable=False)
+    tick_time: Mapped[float] = mapped_column(Float, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(ZoneInfo("Asia/Tokyo")),
+        nullable=False,
+    )
+
+
+class ParamHistoryPulseBlock(Base):
+    """
+    pulse測定時のパラメータ履歴
+    """
+    __tablename__ = "param_history_pulse_blocks"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid,
+        primary_key=True,
+        default=uuid.uuid4,
+        unique=True,
+        nullable=False,
+    )
+    history_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("history.id"), nullable=False)
+    order_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    top_voltage: Mapped[float] = mapped_column(Float, nullable=False)
+    top_time: Mapped[float] = mapped_column(Float, nullable=False)
+    base_voltage: Mapped[float] = mapped_column(Float, nullable=False)
+    base_time: Mapped[float] = mapped_column(Float, nullable=False)
+    loop: Mapped[int] = mapped_column(Integer, nullable=False)
+    interval_time: Mapped[float] = mapped_column(Float, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(ZoneInfo("Asia/Tokyo")),
+        nullable=False,
+    )
+
+
+class ParamHistoryPulseCycle(Base):
+    """
+    pulse測定時のサイクル設定の履歴
+    """
+    __tablename__ = "param_history_pulse_cycles"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid,
+        primary_key=True,
+        default=uuid.uuid4,
+        unique=True,
+        nullable=False,
+    )
+    history_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("history.id"), nullable=False)
+    order_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    start_idx: Mapped[float] = mapped_column(Float, nullable=False)
+    end_idx: Mapped[float] = mapped_column(Float, nullable=False)
+    loop: Mapped[int] = mapped_column(Integer, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(ZoneInfo("Asia/Tokyo")),
+        nullable=False,
+    )
+
+class ParamHistoryEchoState(Base):
+    """
+    echo state測定時のパラメータ履歴
+    """
+    __tablename__ = "param_history_echo_state"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid,
+        primary_key=True,
+        default=uuid.uuid4,
+        unique=True,
+        nullable=False,
+    )
+    history_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("history.id"), nullable=False)
+    pulse_width: Mapped[float] = mapped_column(Float, nullable=False)
+    duty_rate: Mapped[float] = mapped_column(Float, nullable=False)
+    tick: Mapped[float] = mapped_column(Float, nullable=False)
+    discrete_time: Mapped[int] = mapped_column(Integer, nullable=False)
+    top_voltage: Mapped[float] = mapped_column(Float, nullable=False)
+    base_voltage: Mapped[float] = mapped_column(Float, nullable=False)
+    inner_loop_idx: Mapped[int] = mapped_column(Integer, nullable=False)
+    outer_loop_idx: Mapped[int] = mapped_column(Integer, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(ZoneInfo("Asia/Tokyo")),

@@ -82,6 +82,10 @@ class MeasurementStrategy(Protocol):
             "Current",
             "Time"
         ]
+    
+    def save_to_db(self, common_param, result) -> None:
+        """測定結果をDBに保存"""
+        pass
 
     def post_process(self, output: TwoTerminalOutput) -> None:
         """測定後の追加処理"""

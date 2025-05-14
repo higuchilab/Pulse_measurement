@@ -1,10 +1,22 @@
 from typing import TypedDict
+from sqlalchemy import select
+from numpy.typing import NDArray
 
 from ._base import MeasurementStrategy
-from ..data_processing import TwoTerminalOutput
+from ..data_processing import TwoTerminalOutput, CommonParameters
 from ..measurement_model import MeasureModelTemplete, MeasureBlocks, PulseModel, PulseParameters
 # from ..measurement import MeasurementType #クロスインポート
 from ...utils import plot_data
+from src.database.session_manager import session_scope
+from src.database.models import (
+    User,
+    Sample,
+    MeasureType,
+    History,
+    TwoTerminalResult,
+    ParamHistoryPulseBlock,
+    ParamHistoryPulseCycle
+)
 
 class PulseMeasurementStrategy(MeasurementStrategy):
     def __init__(self, params: PulseParameters):
@@ -20,6 +32,51 @@ class PulseMeasurementStrategy(MeasurementStrategy):
         # MeasurementTypeをインポートする必要があります。
         # もしMeasurementTypeを使用する場合は以下のように変更してください
         return MeasurementType.PULSE.value
+    
+    def save_to_db(self, common_param: CommonParameters, result: NDArray) -> None:
+        # データベースに保存する処理を実装
+        with session_scope() as session:
+            # ここでデータベースに保存するレコードを定義
+            history = History(
+                user=common_param.operator,
+                sample=common_param.sample_name,
+                measure_type_id=self.get_measurement_type(),
+                discription=common_param.option
+            )
+            # rowは[voltage, current, elapsed_time]の形式
+            two_terminal_result = [
+                TwoTerminalResult(
+                    history=history,
+                    voltage=row[0],
+                    current=row[1],
+                    elapsed_time=row[2],
+                )
+                for row in result
+            ]
+            param_history_blocks = [
+                ParamHistoryPulseBlock(
+                    history=history,
+                    order_id=i,
+                    top_time=block.top_time,
+                    base_time=block.base_time,
+                    loop=block.loop,
+                    interval=block.interval
+                )
+                for i, block in enumerate(self.parameters["measure_blocks"].blocks)
+            ]
+            param_history_cycles = [
+                ParamHistoryPulseCycle(
+                    history=history,
+                    order_idx=i,
+                    start_idx=cycle.start_index,
+                    end_idx=cycle.stop_index,
+                    loop=cycle.loop
+                )
+                for i, cycle in enumerate(self.parameters["measure_blocks"].cycles)
+            ]
+            session.add_all(history, two_terminal_result, param_history_blocks, param_history_cycles)
+            session.commit()
+        return None
 
     def post_process(self, output: TwoTerminalOutput) -> None:
         pass

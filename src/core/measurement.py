@@ -6,7 +6,6 @@ from numpy.typing import NDArray
 from dotenv import load_dotenv
 from typing import TypedDict, Protocol, Any
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from enum import Enum, auto
 from openpyxl import Workbook, load_workbook
 
@@ -15,7 +14,6 @@ from .data_processing import TwoTerminalOutput, EchoStateOutput, NarmaParam, Swe
 from .measurement_model import MeasureBlocks, PulseModel, MeasureModelTemplete, SweepModel
 from ..utils import plot_data
 from .device_control import write_command, prepare_device, device_connection
-from ..database import append_two_terminal_results, append_record_history
 
 from .measurement_strategies import (
     MeasurementStrategy
@@ -65,19 +63,15 @@ class MeasurementExecutor:
         結果の保存
         file_pathのextensionによって保存形式を変更する
         """
-        # history_param = HistoryParam(
-        #     user_name=self.common_param.operator,
-        #     sample_name=self.common_param.sample_name,
-        #     measure_type=self.strategy.get_measurement_type(),
-        #     option=self.common_param.option
-        # )
-        # history_id = append_record_history(history_param)
-        # save_data_to_database(history_id=history_id, output=output)
-
         if self.common_param.file_path.endswith(".xlsx"):
+            print("測定結果をExcelに保存中")
             output_to_excel_file(file_path=self.common_param.file_path, output=output)
+            print("測定結果を保存しました")
+
         elif self.common_param.file_path.endswith(".csv"):
+            print("測定結果をCSVに保存中")
             output_to_csv(file_path=self.common_param.file_path, output=output, header=header)
+            print("測定結果を保存しました")
 
     def execute(self) -> TwoTerminalOutput:
         """測定の実行"""
@@ -91,15 +85,14 @@ class MeasurementExecutor:
             write_command("SBY", self.device)
             print("測定終了")
 
-            print("測定結果を保存中")
             output = self.strategy.data_formatting(output)
+            self.strategy.save_to_db(self.common_param, output)
             header = self.strategy.get_header()
             self.strategy.post_process(output)
             self._save_results(output, header)
-            print("測定結果を保存しました")
 
             return output
-        
+
         except Exception as e:
             print(f"測定中にエラーが発生しました: {str(e)}")
             raise e
@@ -146,8 +139,3 @@ def output_to_csv(file_path: str, output: NDArray, header: list[str] | None = No
         np.savetxt(file_path, output, delimiter=",", header=header_str, comments="")
     else:
         np.savetxt(file_path, output, delimiter=",")
-
-
-def save_data_to_database(history_id: int, output: TwoTerminalOutput):
-    data = [(history_id, time, voltage, current) for time, voltage, current in zip(output.time, output.voltage, output.current)]
-    append_two_terminal_results(param=data)
