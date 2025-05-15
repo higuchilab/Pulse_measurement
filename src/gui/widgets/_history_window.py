@@ -33,10 +33,10 @@ class HistoryWindow(tk.Frame):
         if selected_item:
             item = self.tree_view_history.item(selected_item)
             history_id = item["values"][0]
-            measure_type_id = item["values"][2]
-            print(f"Selected history_id: {history_id}, measure_type_id: {measure_type_id}")
+            measure_type = item["values"][2]
+            print(f"Selected history_id: {history_id}, measure_type: {measure_type}")
             # 3. measure_type_idから参照するテーブルを決定
-            table = self._get_table_by_measure_type(measure_type_id)
+            table = self._get_table_by_measure_type(measure_type)
 
             if table:
                 # 4. 参照するテーブルからhistory_idに基づいてデータを取得
@@ -48,12 +48,12 @@ class HistoryWindow(tk.Frame):
                 if data:
                     self._plot_data(data)
 
-    def _get_table_by_measure_type(self, measure_type_id):
+    def _get_table_by_measure_type(self, measure_type):
         """
         measure_type_idに基づいて参照するテーブルを決定
         """
         with session_scope() as session:
-            measure_type = session.query(MeasureType).filter_by(id=measure_type_id).first()
+            measure_type = session.query(MeasureType).filter_by(name=measure_type).first()
             if measure_type:
                 if measure_type.name == "2-terminal Pulse":
                     return TwoTerminalResult
