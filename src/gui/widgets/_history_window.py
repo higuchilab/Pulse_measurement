@@ -121,8 +121,12 @@ class TreeViewHistory(Treeview):
                 # 外部キーの名前を取得
                 measure_type_name = row.measure_type.name if row.measure_type else "不明"
                 user_name = row.user.name if row.user else "不明"
-                sample_name = row.sample.name if row.sample else "不明"
-                material_name = row.sample.material.name if row.sample.material else "不明"
+                if row.sample:
+                    sample_name = row.sample.name
+                    material_name = row.sample.material.name if row.sample.material else "不明"
+                else:
+                    sample_name = "不明"
+                    material_name = "不明"
 
                 # TreeViewにデータを挿入
                 self.insert(
