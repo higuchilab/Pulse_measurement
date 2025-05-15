@@ -4,6 +4,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 from typing import Union, List
+import uuid
 
 from src.database.session_manager import session_scope
 from src.database.models import (
@@ -34,9 +35,8 @@ class HistoryWindow(tk.Frame):
         selected_item = self.tree_view_history.selection()
         if selected_item:
             item = self.tree_view_history.item(selected_item)
-            history_id = item["values"][0]
+            history_id = uuid.UUID(item["values"][0])
             measure_type = item["values"][2]
-            print(f"Selected history_id: {history_id}, measure_type: {measure_type}")
 
             # 3. measure_type_idから参照するテーブルを決定
             table = self._get_table_by_measure_type(measure_type)
