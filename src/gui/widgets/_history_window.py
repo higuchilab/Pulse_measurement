@@ -47,9 +47,9 @@ class HistoryWindow(tk.Frame):
                     stmt = select(table).where(table.history_id == history_id)
                     data = session.scalars(stmt).all()
 
-                # 5. データをグラフに表示 (TwoTerminalResultの場合のみ)
-                if isinstance(data, list) and data and isinstance(data[0], TwoTerminalResult):
-                    self._plot_data(data)
+                    # 5. データをグラフに表示 (TwoTerminalResultの場合のみ)
+                    if isinstance(data, list) and data and isinstance(data[0], TwoTerminalResult):
+                        self._plot_data(data)
 
     def _get_table_by_measure_type(self, measure_type: str) -> Union[type, None]:
         """
