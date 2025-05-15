@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter.ttk import Treeview
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from sqlalchemy import select
+
 from src.database.session_manager import session_scope
 from src.database.models import (
     History,
@@ -69,7 +71,10 @@ class HistoryWindow(tk.Frame):
         currents = [row.current for row in data]
 
         # グラフを表示 (仮にpulse_graphを使用)
-        pulse_graph(times, voltages, currents)
+        fig, ax = pulse_graph(times, voltages, currents)
+        self.canvas = FigureCanvasTkAgg(fig, master=self)
+        self.canvas.draw()
+        self.canvas.get_tk_widget().pack(side="bottom", fill="both", expand=True)
 
 
 class TreeViewHistory(Treeview):
