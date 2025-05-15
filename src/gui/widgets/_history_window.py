@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter.ttk import Treeview
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from sqlalchemy import select
+from sqlalchemy.orm import joinedload
 
 from src.database.session_manager import session_scope
 from src.database.models import (
@@ -97,9 +98,33 @@ class TreeViewHistory(Treeview):
         データベースから履歴を取得して表示
         """
         with session_scope() as session:
-            # データベースから履歴を取得
-            stmt = select(History)
+            # Historyテーブルを関連テーブルと内部結合してデータを取得
+            stmt = (
+                select(History)
+                .options(
+                    joinedload(History.measure_type),  # MeasureTypeテーブルをロード
+                    joinedload(History.user),         # Userテーブルをロード
+                    joinedload(History.sample),       # Sampleテーブルをロード
+                )
+            )
             history_data = session.scalars(stmt).all()
-            
+
             for row in history_data:
-                self.insert("", "end", values=(row.id, row.created_at, row.measure_type_id, row.user_id, row.sample_id, row.discription))
+                # 外部キーの名前を取得
+                measure_type_name = row.measure_type.name if row.measure_type else "不明"
+                user_name = row.user.name if row.user else "不明"
+                sample_name = row.sample.name if row.sample else "不明"
+
+                # TreeViewにデータを挿入
+                self.insert(
+                    "",
+                    "end",
+                    values=(
+                        row.id,
+                        row.created_at,
+                        measure_type_name,
+                        user_name,
+                        sample_name,
+                        row.discription,
+                    ),
+                )
