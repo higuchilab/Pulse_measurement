@@ -30,7 +30,7 @@ def append_record_measure_types():
 def main():
     # データベースの初期化
     initialize_db()
-    # append_record_measure_types()
+    append_record_measure_types()
 
     # GUIアプリケーションの起動
     root = tk.Tk()
