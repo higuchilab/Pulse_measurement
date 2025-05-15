@@ -33,7 +33,7 @@ class HistoryWindow(tk.Frame):
             item = self.tree_view_history.item(selected_item)
             history_id = item["values"][0]
             measure_type_id = item["values"][1]
-
+            print(f"Selected history_id: {history_id}, measure_type_id: {measure_type_id}")
             # 3. measure_type_idから参照するテーブルを決定
             table = self._get_table_by_measure_type(measure_type_id)
 
@@ -82,7 +82,8 @@ class TreeViewHistory(Treeview):
     測定履歴を表示
     """
     def __init__(self, master):
-        self.columns = ("日時", "測定者", "物質名", "試料", "測定名", "備考")
+        # self.columns = ("日時", "測定者", "物質名", "試料", "測定名", "備考")
+        self.columns = ("id", "日時", "測定法", "測定者", "資料", "備考")
         super().__init__(master=master, columns=self.columns, selectmode="browse", show="headings")
 
         for col in self.columns:
@@ -101,4 +102,4 @@ class TreeViewHistory(Treeview):
             history_data = session.scalars(stmt).all()
             
             for row in history_data:
-                self.insert("", "end", values=(row.id, row.measure_type_id, row.user_id, row.sample_id, row.discription))
+                self.insert("", "end", values=(row.id, row.created_at, row.measure_type_id, row.user_id, row.sample_id, row.discription))
