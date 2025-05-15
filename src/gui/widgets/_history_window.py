@@ -10,6 +10,7 @@ from src.database.models import (
     TwoTerminalResult,
     FourTerminalResult,
     MeasureType,
+    Sample
 )
 from src.gui.widgets import CommonInputForm
 from src.visualization import pulse_graph
@@ -83,8 +84,15 @@ class TreeViewHistory(Treeview):
     測定履歴を表示
     """
     def __init__(self, master):
-        # self.columns = ("日時", "測定者", "物質名", "試料", "測定名", "備考")
-        self.columns = ("id", "日時", "測定法", "測定者", "試料", "備考")
+        self.columns = (
+            "id",
+            "日時",
+            "測定法",
+            "測定者",
+            "物質名",
+            "試料",
+            "備考"
+        )
         super().__init__(master=master, columns=self.columns, selectmode="browse", show="headings")
 
         for col in self.columns:
@@ -104,7 +112,7 @@ class TreeViewHistory(Treeview):
                 .options(
                     joinedload(History.measure_type),  # MeasureTypeテーブルをロード
                     joinedload(History.user),         # Userテーブルをロード
-                    joinedload(History.sample),       # Sampleテーブルをロード
+                    joinedload(History.sample).joinedload(Sample.material),       # SampleとMaterialテーブルをロード
                 )
             )
             history_data = session.scalars(stmt).all()
@@ -114,6 +122,7 @@ class TreeViewHistory(Treeview):
                 measure_type_name = row.measure_type.name if row.measure_type else "不明"
                 user_name = row.user.name if row.user else "不明"
                 sample_name = row.sample.name if row.sample else "不明"
+                material_name = row.sample.material.name if row.sample.material else "不明"
 
                 # TreeViewにデータを挿入
                 self.insert(
@@ -124,6 +133,7 @@ class TreeViewHistory(Treeview):
                         row.created_at,
                         measure_type_name,
                         user_name,
+                        material_name,
                         sample_name,
                         row.discription,
                     ),
