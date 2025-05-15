@@ -3,6 +3,7 @@ from tkinter.ttk import Treeview
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
+from typing import Union, List
 
 from src.database.session_manager import session_scope
 from src.database.models import (
@@ -36,6 +37,7 @@ class HistoryWindow(tk.Frame):
             history_id = item["values"][0]
             measure_type = item["values"][2]
             print(f"Selected history_id: {history_id}, measure_type: {measure_type}")
+
             # 3. measure_type_idから参照するテーブルを決定
             table = self._get_table_by_measure_type(measure_type)
 
@@ -45,27 +47,24 @@ class HistoryWindow(tk.Frame):
                     stmt = select(table).where(table.history_id == history_id)
                     data = session.scalars(stmt).all()
 
-                # 5. データをグラフに表示
-                if data:
+                # 5. データをグラフに表示 (TwoTerminalResultの場合のみ)
+                if isinstance(data, list) and data and isinstance(data[0], TwoTerminalResult):
                     self._plot_data(data)
 
-    def _get_table_by_measure_type(self, measure_type):
+    def _get_table_by_measure_type(self, measure_type: str) -> Union[type, None]:
         """
-        measure_type_idに基づいて参照するテーブルを決定
+        measure_typeに基づいて参照するテーブルを決定
         """
-        with session_scope() as session:
-            measure_type = session.query(MeasureType).filter_by(name=measure_type).first()
-            if measure_type:
-                if measure_type.name == "2-terminal Pulse":
-                    return TwoTerminalResult
-                elif measure_type.name == "4-terminal Pulse":
-                    return FourTerminalResult
-                # 他の測定タイプに応じたテーブルを追加
-        return None
+        table_mapping = {
+            "2-terminal Pulse": TwoTerminalResult,
+            "4-terminal Pulse": FourTerminalResult,
+            # 他の測定タイプを追加可能
+        }
+        return table_mapping.get(measure_type)
 
-    def _plot_data(self, data):
+    def _plot_data(self, data: List[TwoTerminalResult]):
         """
-        データをグラフに表示
+        TwoTerminalResultのデータをグラフに表示
         """
         # データを時系列形式に変換してプロット
         times = [row.elapsed_time for row in data]
