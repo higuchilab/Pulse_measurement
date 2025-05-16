@@ -88,5 +88,6 @@ def pulse_graph(time_list, v_list, i_list):
     ax[0].set_ylabel("Input Voltage [V]")
     ax[1].set_xlabel("Time [s]")
     ax[1].set_ylabel("Output Current [A]")
+    plt.close()
     return fig, ax
     
