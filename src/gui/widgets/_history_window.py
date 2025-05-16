@@ -26,6 +26,29 @@ class HistoryWindow(tk.Frame):
         self.tree_view_history.pack()
         self.tree_view_history.bind("<<TreeviewSelect>>", self.on_select)
 
+        # グラフ用のキャンバスを初期化
+        self.canvas = None
+
+    def _plot_data(self, data: List[TwoTerminalResult]):
+        """
+        TwoTerminalResultのデータをグラフに表示
+        """
+        # 前のグラフを削除
+        if self.canvas:
+            self.canvas.get_tk_widget().destroy()
+            self.canvas = None
+
+        # データを時系列形式に変換してプロット
+        times = [row.elapsed_time for row in data]
+        voltages = [row.voltage for row in data]
+        currents = [row.current for row in data]
+
+        # グラフを表示 (仮にpulse_graphを使用)
+        fig, ax = pulse_graph(times, voltages, currents)
+        self.canvas = FigureCanvasTkAgg(fig, master=self)
+        self.canvas.draw()
+        self.canvas.get_tk_widget().pack(side="bottom", fill="both", expand=True)
+
     def on_select(self, event):
         """
         Treeviewの選択イベント
@@ -61,21 +84,6 @@ class HistoryWindow(tk.Frame):
             # 他の測定タイプを追加可能
         }
         return table_mapping.get(measure_type)
-
-    def _plot_data(self, data: List[TwoTerminalResult]):
-        """
-        TwoTerminalResultのデータをグラフに表示
-        """
-        # データを時系列形式に変換してプロット
-        times = [row.elapsed_time for row in data]
-        voltages = [row.voltage for row in data]
-        currents = [row.current for row in data]
-
-        # グラフを表示 (仮にpulse_graphを使用)
-        fig, ax = pulse_graph(times, voltages, currents)
-        self.canvas = FigureCanvasTkAgg(fig, master=self)
-        self.canvas.draw()
-        self.canvas.get_tk_widget().pack(side="bottom", fill="both", expand=True)
 
 
 class TreeViewHistory(Treeview):
