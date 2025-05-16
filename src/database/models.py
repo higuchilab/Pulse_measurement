@@ -225,7 +225,6 @@ class History(Base):
     )
 
 
-
 class TwoTerminalResult(Base):
     __tablename__ = "two_terminal_results"
 
@@ -315,6 +314,7 @@ class ParamHistorySweep(Base):
         nullable=False,
     )
     history_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("history.id"), nullable=False)
+    mode: Mapped[str] = mapped_column(Text, nullable=False)
     top_voltage: Mapped[float] = mapped_column(Float, nullable=False)
     bottom_voltage: Mapped[float] = mapped_column(Float, nullable=False)
     voltage_step: Mapped[float] = mapped_column(Float, nullable=False)
@@ -324,6 +324,9 @@ class ParamHistorySweep(Base):
         DateTime(timezone=True),
         default=lambda: datetime.now(ZoneInfo("Asia/Tokyo")),
         nullable=False,
+    )
+    history: Mapped["History"] = relationship(
+        back_populates="param_history_sweep"
     )
 
 
