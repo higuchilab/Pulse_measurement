@@ -37,10 +37,6 @@ class PulseMeasurementStrategy(MeasurementStrategy):
         # データベースに保存する処理を実装
         with session_scope() as session:
             # ここでデータベースに保存するレコードを定義
-            # print(f"user:{common_param.operator}")
-            # print(f"sample: {common_param.sample_name}")
-            # print(f"measure_type: {self.get_measurement_type()}")
-            # print(f"discription: {common_param.option}")
             user = session.query(User).filter_by(name=common_param.operator).first()
             sample = session.query(Sample).filter_by(name=common_param.sample_name).first()
             measure_type = session.query(MeasureType).filter_by(name=self.get_measurement_type()).first()
