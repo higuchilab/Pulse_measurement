@@ -47,7 +47,7 @@ class HistoryWindow(tk.Frame):
         fig, ax = pulse_graph(times, voltages, currents)
         self.canvas = FigureCanvasTkAgg(fig, master=self)
         self.canvas.draw()
-        self.canvas.get_tk_widget().pack(side="bottom", fill="both", expand=True)
+        self.canvas.get_tk_widget().pack(side="bottom", fill="none", expand=False)
 
     def on_select(self, event):
         """

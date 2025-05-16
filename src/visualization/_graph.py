@@ -56,18 +56,18 @@ def pulse_graph(time_list, v_list, i_list):
         return {f"{k1}.{k2}": v for k1, d in dic.items() for k2, v in d.items()}
 
     config = {
-        "font": {"family": "Times New Roman", "size": 14},
+        "font": {"family": "Times New Roman", "size": 8},
         "xtick": {
             "direction": "in",
             "top": True,
             "major.width": 1.2,
-            "labelsize": 20.0,
+            "labelsize": 14.0,
         },
         "ytick": {
             "direction": "in",
             "right": True,
             "major.width": 1.2,
-            "labelsize": 20.0,
+            "labelsize": 14.0,
         },
         "axes": {"linewidth": 1.2, "labelpad": 10},
         "figure": {"dpi": 150},
@@ -75,7 +75,7 @@ def pulse_graph(time_list, v_list, i_list):
 
     plt.rcParams.update(para(config))
 
-    fig, ax = plt.subplots(2, 1, figsize=(10, 8), dpi=150)
+    fig, ax = plt.subplots(2, 1, figsize=(3.5, 4), dpi=150)
 
     # if plot == True:
     ax[0].plot(time_list, v_list)
