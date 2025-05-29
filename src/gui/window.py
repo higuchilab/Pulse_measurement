@@ -68,7 +68,6 @@ class MainWindow(tk.Frame):
         self.sidebar = Sidebar(
             master=self, contents=[self.measure_window, self.history_window]
         )
-        self.stop_event = threading.Event()
 
     @property
     def status_bar(self):
@@ -76,9 +75,10 @@ class MainWindow(tk.Frame):
 
 
 class MeasureWindow(tk.Frame):
-    def __init__(self, statusbar, master):
+    def __init__(self, statusbar: Statusbar, master):
         super().__init__(master=master)
         self.pack(fill="both", expand=True, side="right")
+        self.stop_event = threading.Event()
         self.statusbar = statusbar
         self.form_top = CommonInputForm(self)
 
@@ -171,6 +171,9 @@ class MeasureWindow(tk.Frame):
     def click_exe_button(self):
         """実行ボタン押下後の処理"""
         # ファイル出力の確認と設定
+        self.exe_button.config(state=tk.DISABLED)
+        self.interrapt_button.config(state=tk.NORMAL)
+
         file_path = ""
         if messagebox.askyesno("確認", "ファイル出力しますか？"):
             file_path = filedialog.asksaveasfilename(
@@ -198,23 +201,21 @@ class MeasureWindow(tk.Frame):
 
         # パラメータの取得と実行
         # parameters = strategy.get_parameters()
-        self.exe_button.config(state=tk.DISABLED)
-        self.interrapt_button.config(state=tk.NORMAL)
         try:
             strategy.execute(common_param, stop_event=self.stop_event)
         except Exception as e:
             raise e
         finally:
             self.exe_button.config(state=tk.NORMAL)
-            self.interrapt_button.config(state=tk.DISABLED)
 
     def click_interrapt_button(self):
         """中断ボタン押下後の処理"""
         # ToDo 測定の中断処理を実装する
         # 各タブの実行戦略に中断処理を呼び出す
-        for strategy in self.execution_strategies.values():
-            if hasattr(strategy(), 'interrupt'):
-                strategy().interrupt()
+        # for strategy in self.execution_strategies.values():
+        #     if hasattr(strategy(), 'interrupt'):
+        #         strategy().interrupt()
+        self.stop_event.set()
 
         # ステータスバーに中断メッセージを表示
-        self.statusbar.set_message("実行が中断されました。")
+        self.statusbar.swrite("実行が中断されました。")

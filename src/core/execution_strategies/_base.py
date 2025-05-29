@@ -27,7 +27,7 @@ class ExecutionStrategy(Protocol):
 
     def execute(self, common_param: CommonParameters, stop_event) -> None:
         """測定を実行"""
-        self.pre_execute()  # 実行前の準備を呼び出す
+        self.pre_execute(stop_event)  # 実行前の準備を呼び出す
 
         parameters = self.get_parameters()
 

@@ -101,6 +101,7 @@ class MeasurementExecutor:
         finally:
             if self.device:
                 write_command("SBY", self.device)
+            self.stop_event.clear()
 
 
 def output_to_excel_file(file_path: str, output: TwoTerminalOutput):
