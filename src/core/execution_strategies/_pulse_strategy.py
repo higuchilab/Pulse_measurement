@@ -20,11 +20,9 @@ class PulseExecutionStrategy(ExecutionStrategy):
             'measure_blocks': self.tab.pulse_blocks
         }
     
-    def run_measurement(self, parameters, common_param: CommonParameters):
-        strategy = PulseMeasurementStrategy(parameters)
-        executor = MeasurementExecutor(strategy, common_param)
-        return executor.execute()
-
+    def get_strategy(self, parameters) -> PulseMeasurementStrategy:
+        return PulseMeasurementStrategy(parameters)
+    
     def pre_execute(self) -> None:
         standarded_pulse_blocks = self.tab.pulse_blocks.export_standarded_blocks()
         tot_time = sum((block.top_time + block.base_time) * block.loop + block.interval 

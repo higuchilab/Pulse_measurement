@@ -6,6 +6,7 @@ from pathlib import Path
 from sqlalchemy.orm import sessionmaker
 from src.database.models import User, Material, Sample
 from sqlalchemy import create_engine
+import threading
 
 # from abc import ABC, abstractmethod
 
@@ -67,6 +68,7 @@ class MainWindow(tk.Frame):
         self.sidebar = Sidebar(
             master=self, contents=[self.measure_window, self.history_window]
         )
+        self.stop_event = threading.Event()
 
     @property
     def status_bar(self):
@@ -97,6 +99,14 @@ class MeasureWindow(tk.Frame):
             master=self, text="実行", command=self.click_exe_button
         )
         self.exe_button.pack(side="top", pady=10)
+
+        self.interrapt_button = tk.Button(
+            master=self, 
+            text="中断",
+            command=self.click_interrapt_button,
+            state=tk.DISABLED
+        )
+        self.interrapt_button.pack(side="top", pady=10)
 
         # 戦略の初期化
         self.execution_strategies = {
@@ -188,4 +198,23 @@ class MeasureWindow(tk.Frame):
 
         # パラメータの取得と実行
         # parameters = strategy.get_parameters()
-        strategy.execute(common_param)
+        self.exe_button.config(state=tk.DISABLED)
+        self.interrapt_button.config(state=tk.NORMAL)
+        try:
+            strategy.execute(common_param, stop_event=self.stop_event)
+        except Exception as e:
+            raise e
+        finally:
+            self.exe_button.config(state=tk.NORMAL)
+            self.interrapt_button.config(state=tk.DISABLED)
+
+    def click_interrapt_button(self):
+        """中断ボタン押下後の処理"""
+        # ToDo 測定の中断処理を実装する
+        # 各タブの実行戦略に中断処理を呼び出す
+        for strategy in self.execution_strategies.values():
+            if hasattr(strategy(), 'interrupt'):
+                strategy().interrupt()
+
+        # ステータスバーに中断メッセージを表示
+        self.statusbar.set_message("実行が中断されました。")
