@@ -37,11 +37,6 @@ from src.core.execution_strategies import (
 from src.utils import timer
 from src.database.session_manager import session_scope
 
-# SQLAlchemyのエンジンとセッションを作成
-DATABASE_URL = "sqlite:///example.db"
-engine = create_engine(DATABASE_URL)
-Session = sessionmaker(bind=engine)
-
 
 class Application(tk.Frame):
     def __init__(self, master=None):
@@ -210,7 +205,6 @@ class MeasureWindow(tk.Frame):
 
     def click_interrapt_button(self):
         """中断ボタン押下後の処理"""
-        # ToDo 測定の中断処理を実装する
         # 各タブの実行戦略に中断処理を呼び出す
         # for strategy in self.execution_strategies.values():
         #     if hasattr(strategy(), 'interrupt'):
