@@ -40,10 +40,11 @@ def stop_func(statusbar: Any) -> None:
 
 # メイン測定クラス
 class MeasurementExecutor:
-    def __init__(self, strategy: MeasurementStrategy, common_param: CommonParameters):
+    def __init__(self, strategy: MeasurementStrategy, common_param: CommonParameters, stop_event: Any = None):
         self.strategy = strategy
         self.common_param = common_param
         self.device = None
+        self.stop_event = stop_event
 
     def _connect_device(self):
         """デバイスへの接続"""
@@ -81,7 +82,7 @@ class MeasurementExecutor:
             print(f"測定モデル: {measure_model}")
 
             print("測定開始")
-            output = self.strategy.measure(measure_model=measure_model, dev=self.device)
+            output = self.strategy.measure(stop_event=self.stop_event, measure_model=measure_model, dev=self.device)
             write_command("SBY", self.device)
             print("測定終了")
 

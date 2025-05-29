@@ -16,7 +16,7 @@ class MeasurementStrategy(Protocol):
         """測定タイプを取得"""
         pass
 
-    def measure(self, measure_model: MeasureModelTemplete, dev: any) -> TwoTerminalOutput:
+    def measure(self, stop_event, measure_model: MeasureModelTemplete, dev: any) -> TwoTerminalOutput:
         """測定を実行"""
         V_list = []
         A_list = []
@@ -28,6 +28,9 @@ class MeasurementStrategy(Protocol):
         target_time = 0.0
         for i, voltage in enumerate(measure_model.input_V_list):
             while True:
+                if stop_event.is_set():
+                    # dev.write("SOV0")
+                    raise Exception("Measurement stopped by user")
                 elapsed_time = time.perf_counter() - start_perfcounter
                 if elapsed_time >= target_time:
                     dev.write(f"SOV{voltage}")

@@ -21,7 +21,5 @@ class SweepExecutionStrategy(ExecutionStrategy):
             tick_time=self.tab.tick
         )
     
-    def run_measurement(self, parameters, common_param: CommonParameters):
-        strategy = SweepMeasurementStrategy(parameters)
-        executor = MeasurementExecutor(strategy, common_param)
-        return executor.execute()
+    def get_strategy(self, parameters: SweepParam):
+        return SweepMeasurementStrategy(parameters)
