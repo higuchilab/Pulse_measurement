@@ -29,12 +29,10 @@ class EchoStateExecutionStrategy(ExecutionStrategy):
         #     top_voltage=self.tab.top_voltage,
         #     base_voltage=self.tab.base_voltage
         # )
-    
-    def run_measurement(self, parameters: EchoStateParam, common_param: CommonParameters):
-        strategy = EchoStateMeasurementStrategy(parameters)
-        executor = MeasurementExecutor(strategy, common_param)
-        return executor.execute()
-    
+
+    def get_strategy(self, parameters: EchoStateParam):
+        return EchoStateMeasurementStrategy(parameters)
+        
     # def pre_execute(self) -> None:
     #     tot_time = (self.tab.pulse_width + self.tab.off_width) * self.tab.discrete_time
     #     timer_thread = Thread(target=timer, args=(tot_time, self.status_bar))
