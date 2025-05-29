@@ -217,6 +217,9 @@ class History(Base):
     two_terminal_results: Mapped[list["TwoTerminalResult"]] = relationship(
         back_populates="history"
     )
+    param_history_sweep: Mapped["ParamHistorySweep"] = relationship(
+        back_populates="history"
+    )
     param_history_pulse_blocks: Mapped[list["ParamHistoryPulseBlock"]] = relationship(
         back_populates="history"
     )
