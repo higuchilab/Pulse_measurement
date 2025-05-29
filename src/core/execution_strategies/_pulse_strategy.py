@@ -23,10 +23,10 @@ class PulseExecutionStrategy(ExecutionStrategy):
     def get_strategy(self, parameters) -> PulseMeasurementStrategy:
         return PulseMeasurementStrategy(parameters)
     
-    def pre_execute(self) -> None:
+    def pre_execute(self, stop_event) -> None:
         standarded_pulse_blocks = self.tab.pulse_blocks.export_standarded_blocks()
         tot_time = sum((block.top_time + block.base_time) * block.loop + block.interval 
                       for block in standarded_pulse_blocks)
         
-        timer_thread = Thread(target=timer, args=(tot_time, self.status_bar))
+        timer_thread = Thread(target=timer, args=(tot_time, self.status_bar, stop_event))
         timer_thread.start()

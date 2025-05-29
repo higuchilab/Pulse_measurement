@@ -16,7 +16,7 @@ class ExecutionStrategy(Protocol):
         executer = MeasurementExecutor(strategy, common_param, stop_event=stop_event)
         return executer.execute()
 
-    def pre_execute(self) -> None:
+    def pre_execute(self, stop_event) -> None:
         """実行前の準備（オプション）"""
         pass
 
