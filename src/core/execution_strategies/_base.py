@@ -16,7 +16,7 @@ class ExecutionStrategy(Protocol):
         executer = MeasurementExecutor(strategy, common_param, stop_event=stop_event)
         return executer.execute()
 
-    def pre_execute(self, stop_event) -> None:
+    def pre_execute(self) -> None:
         """実行前の準備（オプション）"""
         pass
 
@@ -27,20 +27,26 @@ class ExecutionStrategy(Protocol):
 
     def execute(self, common_param: CommonParameters, stop_event) -> None:
         """測定を実行"""
-        self.pre_execute(stop_event)  # 実行前の準備を呼び出す
+        self.pre_execute()  # 実行前の準備を呼び出す
 
         parameters = self.get_parameters()
 
-        def target():
-            try:
-                self.run_measurement(
-                    parameters=parameters,
-                    common_param=common_param,
-                    stop_event=stop_event
-                )
-            except Exception as e:
-                print(f"Error during execution: {e}")
-                raise e
+        self.run_measurement(
+            parameters=parameters,
+            common_param=common_param,
+            stop_event=stop_event
+        )
+
+        # def target():
+        #     try:
+        #         self.run_measurement(
+        #             parameters=parameters,
+        #             common_param=common_param,
+        #             stop_event=stop_event
+        #         )
+        #     except Exception as e:
+        #         print(f"Error during execution: {e}")
+        #         raise e
         
-        thread = Thread(target=target)
-        thread.start()
+        # thread = Thread(target=target)
+        # thread.start()

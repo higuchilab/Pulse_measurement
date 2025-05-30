@@ -31,7 +31,6 @@ class NarmaExecutionStrategy(ExecutionStrategy):
     def get_strategy(self, parameters: NarmaParam):
         return NarmaMeasurementStrategy(parameters)
         
-    def pre_execute(self, stop_event) -> None:
+    def get_total_time(self) -> None:
         tot_time = (self.tab.pulse_width + self.tab.off_width) * self.tab.discrete_time
-        timer_thread = Thread(target=timer, args=(tot_time, self.status_bar, stop_event))
-        timer_thread.start()
+        return tot_time
