@@ -197,23 +197,21 @@ class MeasureWindow(tk.Frame):
         # パラメータの取得と実行
         # parameters = strategy.get_parameters()
         try:
-            with ThreadPoolExecutor(max_workers=2) as executor:
-                futures = [
-                    executor.submit(
-                        strategy.execute, common_param, stop_event=self.stop_event
-                    )
-                ]
-                if hasattr(strategy, 'get_total_time'):
-                    futures.append(
-                        executor.submit(
-                            timer, 
-                            strategy.get_total_time(), 
-                            self.statusbar, 
-                            self.stop_event
-                        )
-                    )
-
-                wait(futures)
+            measurement_thread = threading.Thread(
+                target=strategy.execute, 
+                args=(common_param,), 
+                kwargs={'stop_event': self.stop_event}
+            )
+            measurement_thread.start()
+            # タイマーの開始
+            if hasattr(strategy, 'get_total_time'):
+                timer_thread = threading.Thread(
+                    target=timer, 
+                    args=(strategy.get_total_time(), self.statusbar, self.stop_event)
+                )
+                timer_thread.start()
+            measurement_thread.join()  # メインスレッドが終了するまで待機
+            timer_thread.join()  # タイマーの終了を待機
         
         except Exception as e:
             raise e
