@@ -196,28 +196,32 @@ class MeasureWindow(tk.Frame):
 
         # パラメータの取得と実行
         # parameters = strategy.get_parameters()
-        try:
-            measurement_thread = threading.Thread(
-                target=strategy.execute, 
-                args=(common_param,), 
-                kwargs={'stop_event': self.stop_event}
-            )
-            measurement_thread.start()
-            # タイマーの開始
-            if hasattr(strategy, 'get_total_time'):
-                timer_thread = threading.Thread(
-                    target=timer, 
-                    args=(strategy.get_total_time(), self.statusbar, self.stop_event)
+        def measure_thread_func():
+            try:
+                main_thread = threading.Thread(
+                    target=strategy.execute, 
+                    args=(common_param,), 
+                    kwargs={'stop_event': self.stop_event}
                 )
-                timer_thread.start()
-            measurement_thread.join()  # メインスレッドが終了するまで待機
-            timer_thread.join()  # タイマーの終了を待機
+                main_thread.start()
+                # タイマーの開始
+                if hasattr(strategy, 'get_total_time'):
+                    timer_thread = threading.Thread(
+                        target=timer, 
+                        args=(strategy.get_total_time(), self.statusbar, self.stop_event)
+                    )
+                    timer_thread.start()
+                main_thread.join()  # メインスレッドが終了するまで待機
+                timer_thread.join()  # タイマーの終了を待機
         
-        except Exception as e:
-            raise e
-        finally:
-            self.exe_button.config(state=tk.NORMAL)
-            self.interrapt_button.config(state=tk.DISABLED)
+            except Exception as e:
+                raise e
+            finally:
+                self.exe_button.config(state=tk.NORMAL)
+                self.interrapt_button.config(state=tk.DISABLED)
+
+        measure_thread = threading.Thread(target=measure_thread_func)
+        measure_thread.start()
 
     def click_interrapt_button(self):
         """中断ボタン押下後の処理"""
