@@ -7,7 +7,7 @@ from sqlalchemy.orm import sessionmaker
 from src.database.models import User, Material, Sample
 from sqlalchemy import create_engine
 import threading
-
+from concurrent.futures import ThreadPoolExecutor, wait
 # from abc import ABC, abstractmethod
 
 project_root = str(Path(__file__).parent.parent.parent)
@@ -36,11 +36,6 @@ from src.core.execution_strategies import (
 
 from src.utils import timer
 from src.database.session_manager import session_scope
-
-# SQLAlchemyのエンジンとセッションを作成
-DATABASE_URL = "sqlite:///example.db"
-engine = create_engine(DATABASE_URL)
-Session = sessionmaker(bind=engine)
 
 
 class Application(tk.Frame):
@@ -202,15 +197,32 @@ class MeasureWindow(tk.Frame):
         # パラメータの取得と実行
         # parameters = strategy.get_parameters()
         try:
-            strategy.execute(common_param, stop_event=self.stop_event)
+            with ThreadPoolExecutor(max_workers=2) as executor:
+                futures = [
+                    executor.submit(
+                        strategy.execute, common_param, stop_event=self.stop_event
+                    )
+                ]
+                if hasattr(strategy, 'get_total_time'):
+                    futures.append(
+                        executor.submit(
+                            timer, 
+                            strategy.get_total_time(), 
+                            self.statusbar, 
+                            self.stop_event
+                        )
+                    )
+
+                wait(futures)
+        
         except Exception as e:
             raise e
         finally:
             self.exe_button.config(state=tk.NORMAL)
+            self.interrapt_button.config(state=tk.DISABLED)
 
     def click_interrapt_button(self):
         """中断ボタン押下後の処理"""
-        # ToDo 測定の中断処理を実装する
         # 各タブの実行戦略に中断処理を呼び出す
         # for strategy in self.execution_strategies.values():
         #     if hasattr(strategy(), 'interrupt'):

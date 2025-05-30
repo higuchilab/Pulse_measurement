@@ -1,9 +1,6 @@
-from threading import Thread
-
 from src.gui.widgets import TabPulse, Statusbar
 from src.core.measurement import CommonParameters, MeasurementExecutor
 from src.core.measurement_model import PulseParameters
-from src.utils import timer
 
 from src.core.execution_strategies._base import ExecutionStrategy
 from src.core.measurement_strategies import PulseMeasurementStrategy
@@ -23,10 +20,9 @@ class PulseExecutionStrategy(ExecutionStrategy):
     def get_strategy(self, parameters) -> PulseMeasurementStrategy:
         return PulseMeasurementStrategy(parameters)
     
-    def pre_execute(self, stop_event) -> None:
+    def get_total_time(self) -> None:
         standarded_pulse_blocks = self.tab.pulse_blocks.export_standarded_blocks()
         tot_time = sum((block.top_time + block.base_time) * block.loop + block.interval 
                       for block in standarded_pulse_blocks)
         
-        timer_thread = Thread(target=timer, args=(tot_time, self.status_bar, stop_event))
-        timer_thread.start()
+        return tot_time

@@ -30,7 +30,7 @@ class MeasurementStrategy(Protocol):
             while True:
                 if stop_event.is_set():
                     # dev.write("SOV0")
-                    raise Exception("Measurement stopped by user")
+                    break
                 elapsed_time = time.perf_counter() - start_perfcounter
                 if elapsed_time >= target_time:
                     dev.write(f"SOV{voltage}")
