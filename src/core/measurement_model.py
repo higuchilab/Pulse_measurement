@@ -191,6 +191,7 @@ class SweepModel(MeasureModelTemplete):
     def __init__(self, sweep_param: SweepParam):
         super().__init__(tick=sweep_param.tick_time)
         self.param = sweep_param
+        print(self.param)
 
     @property
     def input_V_list(self) -> list:
@@ -205,18 +206,20 @@ class SweepModel(MeasureModelTemplete):
 
     def __one_way(self) -> list:
         ndarray = np.arange(self.param.bottom_voltage, self.param.top_voltage + self.param.voltage_step, self.param.voltage_step)
-        return ndarray.tolist()
+        return ndarray.tolist() * self.param.loop
 
     def __round_trip(self):
         ndarray_forth = np.arange(self.param.bottom_voltage, self.param.top_voltage, self.param.voltage_step)
         ndarray_back = np.arange(self.param.top_voltage, self.param.bottom_voltage - self.param.voltage_step, -self.param.voltage_step)
-        return ndarray_forth.tolist() + ndarray_back.tolist()
+        return (ndarray_forth.tolist() + ndarray_back.tolist()) * self.param.loop
 
     def __bidirection(self):
         ndarray_go = np.arange(0, self.param.top_voltage, self.param.voltage_step)
         ndarray_back = np.arange(self.param.top_voltage, self.param.bottom_voltage, -self.param.voltage_step)
         ndarray_return = np.arange(self.param.bottom_voltage, self.param.voltage_step, self.param.voltage_step)
-        return ndarray_go.tolist() + ndarray_back.tolist() + ndarray_return.tolist()
+        outlist = (ndarray_go.tolist() + ndarray_back.tolist() + ndarray_return.tolist()) * self.param.loop
+        print(outlist)
+        return outlist
 
 
 class EchoStateModel(MeasureModelTemplete):

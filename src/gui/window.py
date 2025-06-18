@@ -1,3 +1,5 @@
+import os
+
 import tkinter as tk
 from tkinter import messagebox, filedialog
 from tkinter.ttk import Notebook
@@ -166,6 +168,15 @@ class MeasureWindow(tk.Frame):
     def click_exe_button(self):
         """実行ボタン押下後の処理"""
         # ファイル出力の確認と設定
+        def get_unique_filepath(filepath):
+            base, ext = os.path.splitext(filepath)
+            counter = 1
+            new_filepath = filepath
+            while os.path.exists(new_filepath):
+                new_filepath = f"{base}({counter}){ext}"
+                counter += 1
+            return new_filepath
+        
         self.exe_button.config(state=tk.DISABLED)
         self.interrapt_button.config(state=tk.NORMAL)
 
@@ -181,6 +192,9 @@ class MeasureWindow(tk.Frame):
                 initialdir=f"C:/Users/higuchi/Desktop/{self.form_top.input_measure_person}",
                 initialfile=f"{self.form_top.input_material_name}_{self.form_top.input_sample_num}_{self.form_top.input_option}",
             )
+
+            file_path = get_unique_filepath(file_path)
+
 
         # 共通パラメータの設定とデータベース更新
         common_param = self._get_common_parameters(file_path)
@@ -211,8 +225,9 @@ class MeasureWindow(tk.Frame):
                         args=(strategy.get_total_time(), self.statusbar, self.stop_event)
                     )
                     timer_thread.start()
+                    timer_thread.join() # タイマースレッドの終了を待機
                 main_thread.join()  # メインスレッドが終了するまで待機
-                timer_thread.join()  # タイマーの終了を待機
+                # timer_thread.join()  # タイマーの終了を待機
         
             except Exception as e:
                 raise e

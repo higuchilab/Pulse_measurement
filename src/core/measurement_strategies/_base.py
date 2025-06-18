@@ -59,9 +59,9 @@ class MeasurementStrategy(Protocol):
         plot_data(output)
         result = np.stack(
             [
+                np.array([output.time]).reshape(-1),
                 np.array([output.voltage]).reshape(-1),
                 np.array([output.current]).reshape(-1),
-                np.array([output.time]).reshape(-1)
             ],
             axis=1
         )

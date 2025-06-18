@@ -115,7 +115,7 @@ def output_to_excel_file(file_path: str, output: TwoTerminalOutput):
     ws['B1'] = "Voltage"
     ws['C1'] = "Current"
 
-    for i, (t, voltage, current) in enumerate(zip(output.time, output.voltage, output.current), 2):
+    for i, (t, voltage, current) in enumerate(zip(output[0], output[1], output[2]), 2):
         ws.cell(i, 1, t)
         ws.cell(i, 2, voltage)
         ws.cell(i, 3, current)
