@@ -81,9 +81,9 @@ class MeasurementStrategy(Protocol):
             list[str]: 測定結果のヘッダー
         """
         return [
+            "Time",
             "Voltage",
             "Current",
-            "Time"
         ]
     
     def save_to_db(self, common_param, result) -> None:

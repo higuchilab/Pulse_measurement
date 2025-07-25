@@ -125,7 +125,7 @@ class CommonInputForm(Frame):
         self._input_material_name.trace_add("write", self.update_sample_list)
         self._material_name = ComboboxForm(
             label_name="物質名",
-            input_width=5,
+            input_width=10,
             values=refer_materials_table(),
             master=self.form_top,
             textvariable=self._input_material_name,
@@ -135,7 +135,7 @@ class CommonInputForm(Frame):
         self._input_sample_num = tk.StringVar()
         self._sample_num = ComboboxForm(
             label_name="試料No",
-            input_width=5,
+            input_width=10,
             values=refer_samples_table(self.input_material_name),
             master=self.form_top,
             textvariable=self._input_sample_num,

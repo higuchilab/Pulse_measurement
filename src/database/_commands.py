@@ -218,7 +218,7 @@ def refer_samples_table(material_name) -> list[str]:
         return []
     
     sql_refer_samples = '''
-        SELECT sample_name FROM samples WHERE material_id = ?
+        SELECT name FROM samples WHERE material_id = ?
     '''
     sample_list = fetch_all_data(sql_refer_samples, (material_id,))
     if not type(sample_list) == list:
