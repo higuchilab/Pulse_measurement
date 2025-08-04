@@ -50,9 +50,9 @@ class PulseMeasurementStrategy(MeasurementStrategy):
             two_terminal_result = [
                 TwoTerminalResult(
                     history=history,
-                    voltage=row[0],
-                    current=row[1],
-                    elapsed_time=row[2],
+                    elapsed_time=row[0],
+                    voltage=row[1],
+                    current=row[2],
                 )
                 for row in result
             ]
